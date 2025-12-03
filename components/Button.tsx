@@ -1,0 +1,174 @@
+import { ButtonProps } from "@/assets/utils/Components/Types";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+
+const Button = ({
+  text,
+  Icon,
+  size = "large",
+  type = "primary",
+  state = "default",
+  wrap = true,
+  dimensions,
+  onPress,
+}: ButtonProps) => {
+  const colors = {
+    primary: {
+      default: {
+        bg: "#F4C430",
+        text: "#101828",
+        border: "transparent",
+      },
+      pressed: {
+        bg: "#e0b42dff",
+        text: "#101828",
+        border: "transparent",
+      },
+    },
+    secondary: {
+      default: {
+        bg: "#ffffff",
+        text: "#F4C430",
+        border: "#F4C430",
+      },
+      pressed: {
+        bg: "#f1f1f1ff",
+        text: "#E0B01C",
+        border: "#E0B01C",
+      },
+    },
+    ternary: {
+      default: {
+        bg: "#ffffff",
+        text: "#364153",
+        border: "#c2c3c5ff",
+      },
+      pressed: {
+        bg: "#f1f1f1ff",
+        text: "#364153",
+        border: "#c2c3c5ff",
+      },
+    },
+  };
+  const { bg, text: textColor, border } = colors[type][state];
+  const pressedStyle = colors[type].pressed;
+  const SIZE_CONFIG = {
+    small: {
+      padding: [4, 16],
+      fontSize: 14,
+      iconSize: 20,
+      borderRadius: 6,
+      dimensions: dimensions ? dimensions : [30, 30],
+      gap: 4,
+      borderWidth: 1,
+    },
+    medium: {
+      padding: [8, 20],
+      fontSize: 18,
+      iconSize: 24,
+      borderRadius: 8,
+      dimensions: [40, 40],
+      gap: 8,
+      borderWidth: 1.5,
+    },
+    large: {
+      padding: [12, 24],
+      fontSize: 14,
+      iconSize: 16,
+      borderRadius: 10,
+      dimensions: [52, 52],
+      gap: 8,
+      borderWidth: 2,
+    },
+  } as const;
+  const {
+    padding: [paddingVertical, paddingHorizontal],
+    fontSize,
+    iconSize,
+    borderRadius,
+    dimensions: [height, width],
+    gap,
+    borderWidth,
+  } = SIZE_CONFIG[size];
+
+  return (
+    <View
+      style={{
+        overflow: "hidden",
+        borderRadius: borderRadius,
+        borderWidth: type === "primary" ? 0 : borderWidth,
+        borderColor: border,
+        alignSelf: wrap ? "center" : "auto",
+      }}
+    >
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => {
+          // Determine which state colors to use
+          const currentState = pressed
+            ? colors[type].pressed
+            : colors[type].default;
+
+          return [
+            styles.baseButton,
+            {
+              backgroundColor: currentState.bg,
+              paddingHorizontal,
+              paddingVertical,
+              gap,
+              height: type === "secondary" ? height - 4 : height,
+              width:
+                Icon && !text
+                  ? type === "secondary"
+                    ? width - 4
+                    : width
+                  : "auto",
+              borderRadius: borderRadius,
+              borderColor: currentState.border,
+            },
+          ];
+        }}
+      >
+        {({ pressed }) => (
+          <>
+            {Icon && (
+              <Icon
+                color={pressed ? pressedStyle.text : textColor}
+                width={iconSize}
+                height={iconSize}
+              />
+            )}
+            {text && (
+              <Text
+                style={[
+                  styles.text,
+                  {
+                    color: pressed ? pressedStyle.text : textColor,
+                    fontSize,
+                  },
+                ]}
+              >
+                {text}
+              </Text>
+            )}
+          </>
+        )}
+      </Pressable>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  baseButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  text: {
+    fontFamily: "Arimo-Medium",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+});
+
+export default Button;
