@@ -1,0 +1,65 @@
+{
+	"info": {
+		"_postman_id": "6c86d9e5-adff-47a4-9cf7-88e994c53fc4",
+		"name": "NexFixApp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13228871",
+		"_collection_link": "https://itscompany.postman.co/workspace/test1~a0239167-e0f8-46a7-8e78-e08eaaf0a67c/collection/13228871-6c86d9e5-adff-47a4-9cf7-88e994c53fc4?action=share&source=collection_link&creator=13228871"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"admin@nexfix.com\",\r\n    \"password\": \"password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://nexfixapp.com/api/nexfix_api/login.php",
+					"protocol": "https",
+					"host": [
+						"nexfixapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"nexfix_api",
+						"login.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Request",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://nexfixapp.com/api/nexfix_api/vehicule.php",
+					"protocol": "https",
+					"host": [
+						"nexfixapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"nexfix_api",
+						"vehicule.php"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

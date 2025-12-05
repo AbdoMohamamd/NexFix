@@ -11,6 +11,7 @@ const Button = ({
   wrap = true,
   dimensions,
   onPress,
+  disabled = false,
 }: ButtonProps) => {
   const colors = {
     primary: {
@@ -22,6 +23,11 @@ const Button = ({
       pressed: {
         bg: "#e0b42dff",
         text: "#101828",
+        border: "transparent",
+      },
+      disabled: {
+        bg: "#F3F4F6",
+        text: "#9CA3AF",
         border: "transparent",
       },
     },
@@ -36,6 +42,11 @@ const Button = ({
         text: "#E0B01C",
         border: "#E0B01C",
       },
+      disabled: {
+        bg: "#F3F4F6",
+        text: "#9CA3AF",
+        border: "#D1D5DB",
+      },
     },
     ternary: {
       default: {
@@ -48,10 +59,21 @@ const Button = ({
         text: "#364153",
         border: "#c2c3c5ff",
       },
+      disabled: {
+        bg: "#F3F4F6",
+        text: "#9CA3AF",
+        border: "#D1D5DB",
+      },
     },
   };
-  const { bg, text: textColor, border } = colors[type][state];
-  const pressedStyle = colors[type].pressed;
+
+  const {
+    bg,
+    text: textColor,
+    border,
+  } = disabled ? colors[type].disabled : colors[type][state];
+  const pressedStyle = disabled ? colors[type].disabled : colors[type].pressed;
+
   const SIZE_CONFIG = {
     small: {
       padding: [4, 16],
@@ -81,6 +103,7 @@ const Button = ({
       borderWidth: 2,
     },
   } as const;
+
   const {
     padding: [paddingVertical, paddingHorizontal],
     fontSize,
@@ -102,10 +125,13 @@ const Button = ({
       }}
     >
       <Pressable
-        onPress={onPress}
+        onPress={disabled ? undefined : onPress}
+        disabled={disabled}
         style={({ pressed }) => {
           // Determine which state colors to use
-          const currentState = pressed
+          const currentState = disabled
+            ? colors[type].disabled
+            : pressed
             ? colors[type].pressed
             : colors[type].default;
 
@@ -133,7 +159,13 @@ const Button = ({
           <>
             {Icon && (
               <Icon
-                color={pressed ? pressedStyle.text : textColor}
+                color={
+                  disabled
+                    ? colors[type].disabled.text
+                    : pressed
+                    ? pressedStyle.text
+                    : textColor
+                }
                 width={iconSize}
                 height={iconSize}
               />
@@ -143,8 +175,13 @@ const Button = ({
                 style={[
                   styles.text,
                   {
-                    color: pressed ? pressedStyle.text : textColor,
+                    color: disabled
+                      ? colors[type].disabled.text
+                      : pressed
+                      ? pressedStyle.text
+                      : textColor,
                     fontSize,
+                    opacity: disabled ? 0.7 : 1,
                   },
                 ]}
               >

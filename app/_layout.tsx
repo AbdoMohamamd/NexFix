@@ -60,11 +60,31 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="Authentication/Register" // Fixed
-        options={{ title: "Create Account" ,headerStyle:{}}}
+        options={{ title: "Create Account", headerStyle: {} }}
       />
       <Stack.Screen
         name="Authentication/Login" // Fixed and removed .tsx extension
         options={{ title: "Login" }}
+      />
+
+      <Stack.Screen
+        name="Pages/ServiceDetails"
+        options={{
+          title: "Book Service",
+          headerShadowVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="Pages/ServicesHistory"
+        options={{
+          title: "Services History",
+        }}
+      />
+      <Stack.Screen
+        name="Pages/RateService"
+        options={{
+          title: "Rate This Service",
+        }}
       />
     </Stack>
   );

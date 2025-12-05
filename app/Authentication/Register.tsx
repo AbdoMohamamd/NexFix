@@ -4,6 +4,7 @@ import SvgTrash from "@/assets/Icons/Trash";
 import Button from "@/components/Button";
 import InfoBlock from "@/components/InfoBlock copy";
 import CustomTextInput from "@/components/TextInput";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -64,6 +65,7 @@ const Register = () => {
       })),
     };
     console.log("Form Data:", formData);
+    router.navigate("/(tabs)");
     // Add your API call or navigation here
   };
 
@@ -192,8 +194,7 @@ const Register = () => {
               {/* Show delete button only if more than one vehicle */}
               {vehicles.length > 1 && (
                 <Pressable onPress={() => removeVehicle(vehicle.id)}>
-              
-              <SvgTrash width={16} height={16} color="#EF4444" /> 
+                  <SvgTrash width={16} height={16} color="#EF4444" />
                 </Pressable>
               )}
             </View>

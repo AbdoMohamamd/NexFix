@@ -24,6 +24,7 @@ export interface ButtonProps {
   wrap?: boolean;
   onPress: () => void;
   size?: ButtonSizes;
+  disabled?: boolean;
 }
 
 export type BadgeTypes = "primary" | "secondary" | "ternary";

@@ -5,14 +5,14 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import SvgCalendar from "@/assets/Icons/Calendar";
 import SvgHomeAlt from "@/assets/Icons/HomeAlt";
-import SvgPhone from "@/assets/Icons/Phone";
 import SvgUser from "@/assets/Icons/User";
 import { BottomNavbarIconProps } from "@/assets/utils/Components/Types";
+import SvgTag from "@/assets/Icons/Tag";
 
 const TAB_CONFIG = [
   { name: "index", title: "Home", Icon: SvgHomeAlt, label: "Home" },
   { name: "Book", title: "Book", Icon: SvgCalendar, label: "Book" },
-  { name: "Offers", title: "Offers", Icon: SvgPhone, label: "Offers" },
+  { name: "Offers", title: "Offers", Icon: SvgTag, label: "Offers" },
   { name: "Account", title: "Account", Icon: SvgUser, label: "Account" },
 ];
 
