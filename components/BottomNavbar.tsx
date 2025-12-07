@@ -10,7 +10,7 @@ import SvgCalendar from "@/assets/Icons/Calendar";
 import SvgHomeAlt from "@/assets/Icons/HomeAlt";
 import SvgTag from "@/assets/Icons/Tag";
 import SvgUser from "@/assets/Icons/User";
-import { BottomNavbarIconProps } from "@/assets/utils/Components/Types";
+import { BottomNavbarIconProps } from "@/assets/utils/Types";
 
 const TAB_CONFIG = [
   { name: "index", title: "Home", Icon: SvgHomeAlt, label: "Home" },

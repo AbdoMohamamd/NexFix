@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import SvgGoback from "@/assets/Icons/Goback";
-import { HeaderProps } from "@/assets/utils/Components/Types";
+import { HeaderProps } from "@/assets/utils/Types";
 
 const Header = ({
   title,

@@ -1,4 +1,4 @@
-import { TextInputProps } from "@/assets/utils/Components/Types";
+import { TextInputProps } from "@/assets/utils/Types";
 import React, { useRef, useState } from "react";
 import {
   TextInput as RNTextInput,
@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
 const CustomTextInput = ({
@@ -23,6 +23,7 @@ const CustomTextInput = ({
   secureTextEntry,
   onPress,
   style,
+  placeholder,
 }: TextInputProps & { style?: any }) => {
   const colors = {
     default: {
@@ -74,14 +75,15 @@ const CustomTextInput = ({
           {IconComponent1 && (
             <IconComponent1
               color={currentColors.iconColor}
-              width={wp('6%')}   // Responsive icon (was 24)
-              height={wp('6%')}  // Responsive icon (was 24)
+              width={wp("6%")} // Responsive icon (was 24)
+              height={wp("6%")} // Responsive icon (was 24)
             />
           )}
           <RNTextInput
             ref={inputRef}
             style={[styles.input, { color: currentColors.textColor }]}
             value={value}
+            placeholder={placeholder}
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             onFocus={handleFocus}
@@ -94,8 +96,8 @@ const CustomTextInput = ({
           <TouchableOpacity onPress={onRightIconPress}>
             <IconComponent2
               color={currentColors.iconColor}
-              width={wp('6%')}   // Responsive icon (was 24)
-              height={wp('6%')}  // Responsive icon (was 24)
+              width={wp("6%")} // Responsive icon (was 24)
+              height={wp("6%")} // Responsive icon (was 24)
             />
           </TouchableOpacity>
         )}
@@ -110,38 +112,38 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   title: {
-    fontSize: wp('3.5%'),   // Responsive font (was 14)
+    fontSize: wp("3.5%"), // Responsive font (was 14)
     fontFamily: "Arimo-Medium",
-    marginBottom: hp('0.8%'), // Responsive margin (was 6)
+    marginBottom: hp("0.8%"), // Responsive margin (was 6)
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: wp('2%'),    // Responsive border radius (was 8)
-    borderWidth: wp('0.38%'),  // Responsive border width (was 1.5)
-    paddingHorizontal: wp('3%'), // Responsive padding (was 12)
-    paddingVertical: hp('1%'),   // Responsive padding (was 8)
-    minHeight: hp('6%'),        // Responsive min height (was 48)
+    borderRadius: wp("2%"), // Responsive border radius (was 8)
+    borderWidth: wp("0.38%"), // Responsive border width (was 1.5)
+    paddingHorizontal: wp("3%"), // Responsive padding (was 12)
+    paddingVertical: hp("1%"), // Responsive padding (was 8)
+    minHeight: hp("6%"), // Responsive min height (was 48)
   },
   inputContent: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: wp('2%'),             // Responsive gap (was 8)
+    gap: wp("2%"), // Responsive gap (was 8)
   },
   input: {
-    fontSize: wp('4%'),        // Responsive font (was 16)
+    fontSize: wp("4%"), // Responsive font (was 16)
     fontFamily: "Arimo-Regular",
     flex: 1,
     padding: 0,
     margin: 0,
     height: "100%",
-    minHeight: hp('4%'),       // Ensure touch target on tablets
+    minHeight: hp("4%"), // Ensure touch target on tablets
   },
   supportText: {
-    fontSize: wp('3%'),        // Responsive font (was 12)
-    marginTop: hp('0.5%'),     // Responsive margin (was 4)
+    fontSize: wp("3%"), // Responsive font (was 12)
+    marginTop: hp("0.5%"), // Responsive margin (was 4)
     fontFamily: "Arimo-Regular",
     color: "#6A7282",
   },

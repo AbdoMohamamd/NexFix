@@ -1,9 +1,9 @@
-import { ButtonProps } from "@/assets/utils/Components/Types";
+import { ButtonProps } from "@/assets/utils/Types";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
 const Button = ({

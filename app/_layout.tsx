@@ -5,13 +5,12 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from "expo-router";
+import { ActivityIndicator, View } from "react-native";
+import { AuthProvider, useAuth } from "./Context/AuthProvider";
+
+export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: "(tabs)",
 };
 
@@ -32,7 +31,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -47,46 +45,89 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
+}
+
+// Splash screen component
+function SplashScreenComponent() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#FFFFFF",
+      }}
+    >
+      <ActivityIndicator size="large" color="#F4C430" />
+    </View>
+  );
 }
 
 function RootLayoutNav() {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  // Show splash screen while checking auth status
+  if (isLoading) {
+    return <SplashScreenComponent />;
+  }
+
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* Public routes */}
       <Stack.Screen
-        name="Authentication/Welcome" // Fixed: "Authenticatoin" → "Authentication"
+        name="Authentication/Welcome"
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Authentication/Register" // Fixed
+        name="Authentication/Register"
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Authentication/Login" // Fixed and removed .tsx extension
+        name="Authentication/Login"
         options={{ headerShown: false }}
       />
 
-      <Stack.Screen
-        name="Pages/ServiceDetails"
-        options={{
-          title: "Book Service",
-          headerShadowVisible: false,
-        }}
-      />
-      <Stack.Screen
-        name="Pages/ServicesHistory"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="Pages/RateService"
-        options={{
-          title: "Rate This Service",
-          headerShown: false,
-        }}
-      />
+      {/* Protected routes */}
+      {isAuthenticated ? (
+        // User is authenticated - show main app
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Pages/ServiceDetails"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Pages/ServicesHistory"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Pages/RateService"
+            options={{
+              title: "Rate This Service",
+              headerShown: false,
+            }}
+          />
+        </>
+      ) : (
+        // User is not authenticated - redirect to login
+        <Stack.Screen
+          name="index"
+          options={{ headerShown: false }}
+          redirect={true}
+          listeners={{
+            focus: () => {
+              // This will redirect to login when trying to access main app
+              const router = require("expo-router").router;
+              router.replace("/Authentication/Welcome");
+            },
+          }}
+        />
+      )}
     </Stack>
   );
 }
