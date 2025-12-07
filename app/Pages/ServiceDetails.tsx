@@ -5,11 +5,15 @@ import React from "react";
 import {
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ServiceDetails = () => {
   const workshop = {
@@ -54,8 +58,7 @@ const ServiceDetails = () => {
       title: "AC Repair",
       description: "AC system recharge and leak check",
       date: "Sep 20, 2025 • 3:00 PM",
-      price: "$75",
-    },
+      price: "$75",}
   ];
 
   return (
@@ -64,23 +67,30 @@ const ServiceDetails = () => {
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
+          paddingHorizontal: wp('4%'), // 16px
+          paddingVertical: hp('2%'), // 16px
+          borderBottomWidth: wp('0.25%'), // 1px
           borderBottomColor: "#E5E7EB",
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ 
+          flexDirection: "row", 
+          alignItems: "center", 
+          gap: wp('3%') // 12px
+        }}>
           <View
             style={{
-              padding: 12,
+              padding: wp('3%'), // 12px
               backgroundColor: "#F3F4F6",
-              borderRadius: 10,
+              borderRadius: wp('2.5%'), // 10px
             }}
           >
             <Image
               source={require("@/assets/images/key.png")}
-              style={{ width: 48, height: 48 }}
+              style={{ 
+                width: wp('12%'), // 48px
+                height: wp('12%') // 48px
+              }}
             />
           </View>
 
@@ -88,8 +98,8 @@ const ServiceDetails = () => {
             <Text
               style={{
                 fontFamily: "Arimo-Medium",
-                fontSize: 18,
-                marginBottom: 4,
+                fontSize: wp('4.5%'), // 18px
+                marginBottom: hp('0.5%'), // 4px
               }}
             >
               {workshop.name}
@@ -99,16 +109,20 @@ const ServiceDetails = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 2,
+                marginBottom: hp('0.25%'), // 2px
               }}
             >
-              <SvgStarIcon width={16} height={16} color="#F59E0B" />
+              <SvgStarIcon 
+                width={wp('4%')} // 16px
+                height={wp('4%')} // 16px
+                color="#F59E0B" 
+              />
               <Text
                 style={{
                   fontFamily: "Arimo-Medium",
-                  fontSize: 14,
+                  fontSize: wp('3.5%'), // 14px
                   color: "#111827",
-                  marginLeft: 4,
+                  marginLeft: wp('1%'), // 4px
                 }}
               >
                 {workshop.rating}
@@ -123,13 +137,17 @@ const ServiceDetails = () => {
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <SvgLocation width={14} height={14} color="#6A7282" />
+                <SvgLocation 
+                  width={wp('3.5%')} // 14px
+                  height={wp('3.5%')} // 14px
+                  color="#6A7282" 
+                />
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 14,
+                    fontSize: wp('3.5%'), // 14px
                     color: "#6A7282",
-                    marginLeft: 4,
+                    marginLeft: wp('1%'), // 4px
                   }}
                 >
                   {workshop.location}
@@ -143,17 +161,17 @@ const ServiceDetails = () => {
       {/* Services Section */}
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          gap: 12,
+          paddingHorizontal: wp('4%'), // 16px
+          paddingVertical: hp('2%'), // 16px
+          gap: hp('1.5%'), // 12px
         }}
         showsVerticalScrollIndicator={false}
       >
         <Text
           style={{
-            fontSize: 18,
+            fontSize: wp('4.5%'), // 18px
             fontFamily: "Arimo-Bold",
-            marginBottom: 8,
+            marginBottom: hp('1%'), // 8px
           }}
         >
           Your Services
@@ -163,10 +181,10 @@ const ServiceDetails = () => {
           <Pressable
             key={service.id}
             style={{
-              padding: 16,
+              padding: wp('4%'), // 16px
               backgroundColor: "#ffffff",
-              borderRadius: 10,
-              borderWidth: 1,
+              borderRadius: wp('2.5%'), // 10px
+              borderWidth: wp('0.25%'), // 1px
               borderColor: "#E5E7EB",
             }}
             onPress={() => console.log(`Pressed service ${service.id}`)}
@@ -176,15 +194,15 @@ const ServiceDetails = () => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "flex-start",
-                marginBottom: 8,
+                marginBottom: hp('1%'), // 8px
               }}
             >
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 16,
-                    marginBottom: 4,
+                    fontSize: wp('4%'), // 16px
+                    marginBottom: hp('0.5%'), // 4px
                   }}
                 >
                   {service.title}
@@ -192,7 +210,7 @@ const ServiceDetails = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Regular",
-                    fontSize: 14,
+                    fontSize: wp('3.5%'), // 14px
                     color: "#6A7282",
                   }}
                 >
@@ -203,9 +221,9 @@ const ServiceDetails = () => {
               <Text
                 style={{
                   fontFamily: "Arimo-Bold",
-                  fontSize: 18,
+                  fontSize: wp('4.5%'), // 18px
                   color: "#EFBF2B",
-                  marginLeft: 12,
+                  marginLeft: wp('3%'), // 12px
                 }}
               >
                 {service.price}
@@ -216,16 +234,20 @@ const ServiceDetails = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginTop: 8,
+                marginTop: hp('1%'), // 8px
               }}
             >
-              <SvgClock width={14} height={14} color="#6A7282" />
+              <SvgClock 
+                width={wp('3.5%')} // 14px
+                height={wp('3.5%')} // 14px
+                color="#6A7282" 
+              />
               <Text
                 style={{
                   fontFamily: "Arimo-Medium",
-                  fontSize: 14,
+                  fontSize: wp('3.5%'), // 14px
                   color: "#6A7282",
-                  marginLeft: 6,
+                  marginLeft: wp('1.5%'), // 6px
                 }}
               >
                 {service.date}

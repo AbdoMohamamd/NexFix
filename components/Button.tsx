@@ -1,6 +1,10 @@
 import { ButtonProps } from "@/assets/utils/Components/Types";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const Button = ({
   text,
@@ -74,45 +78,59 @@ const Button = ({
   } = disabled ? colors[type].disabled : colors[type][state];
   const pressedStyle = disabled ? colors[type].disabled : colors[type].pressed;
 
+  // Responsive SIZE_CONFIG - scales proportionally
   const SIZE_CONFIG = {
     small: {
-      padding: [4, 16],
-      fontSize: 14,
-      iconSize: 20,
-      borderRadius: 6,
-      dimensions: dimensions ? dimensions : [30, 30],
-      gap: 4,
-      borderWidth: 1,
+      // Converted from pixels to percentages
+      paddingVertical: hp("0.5%"), // was 4
+      paddingHorizontal: wp("4%"), // was 16
+      fontSize: wp("3.5%"), // was 14 (scales with width for consistency)
+      iconSize: wp("5%"), // was 20
+      borderRadius: wp("1.5%"), // was 6
+      height: wp("7.5%"), // was 30 (responsive width-based height)
+      width: wp("7.5%"), // was 30
+      gap: wp("1%"), // was 4
+      borderWidth: wp("0.25%"), // was 1
     },
     medium: {
-      padding: [8, 20],
-      fontSize: 18,
-      iconSize: 24,
-      borderRadius: 8,
-      dimensions: [40, 40],
-      gap: 8,
-      borderWidth: 1.5,
+      paddingVertical: hp("1%"), // was 8
+      paddingHorizontal: wp("5%"), // was 20
+      fontSize: wp("4.5%"), // was 18
+      iconSize: wp("6%"), // was 24
+      borderRadius: wp("2%"), // was 8
+      height: wp("10%"), // was 40
+      width: wp("10%"), // was 40
+      gap: wp("2%"), // was 8
+      borderWidth: wp("0.38%"), // was 1.5
     },
     large: {
-      padding: [12, 24],
-      fontSize: 14,
-      iconSize: 16,
-      borderRadius: 10,
-      dimensions: [52, 52],
-      gap: 8,
-      borderWidth: 2,
+      paddingVertical: hp("1.5%"), // was 12
+      paddingHorizontal: wp("6%"), // was 24
+      fontSize: wp("3.5%"), // was 14 (you had 14 for large)
+      iconSize: wp("4%"), // was 16
+      borderRadius: wp("2.5%"), // was 10
+      height: wp("13%"), // was 52
+      width: wp("13%"), // was 52
+      gap: wp("2%"), // was 8
+      borderWidth: wp("0.5%"), // was 2
     },
   } as const;
 
   const {
-    padding: [paddingVertical, paddingHorizontal],
+    paddingVertical,
+    paddingHorizontal,
     fontSize,
     iconSize,
     borderRadius,
-    dimensions: [height, width],
+    height: defaultHeight,
+    width: defaultWidth,
     gap,
     borderWidth,
   } = SIZE_CONFIG[size];
+
+  // Use custom dimensions if provided, otherwise use default responsive ones
+  const height = dimensions?.[0] || defaultHeight;
+  const width = dimensions?.[1] || defaultWidth;
 
   return (
     <View
@@ -142,11 +160,18 @@ const Button = ({
               paddingHorizontal,
               paddingVertical,
               gap,
-              height: type === "secondary" ? height - 4 : height,
+              height:
+                type === "secondary"
+                  ? typeof height === "number"
+                    ? height - wp("1%") // Responsive adjustment
+                    : height
+                  : height,
               width:
                 Icon && !text
                   ? type === "secondary"
-                    ? width - 4
+                    ? typeof width === "number"
+                      ? width - wp("1%") // Responsive adjustment
+                      : width
                     : width
                   : "auto",
               borderRadius: borderRadius,

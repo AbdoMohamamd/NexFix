@@ -6,7 +6,7 @@ import SvgLogout from "@/assets/Icons/Logout";
 import SvgPlus from "@/assets/Icons/Plus";
 import SvgQuestionMark from "@/assets/Icons/QuestionMark";
 import SvgShield from "@/assets/Icons/Shield";
-import InfoBlock from "@/components/InfoBlock copy";
+import InfoBlock from "@/components/InfoBlock";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -17,6 +17,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Account = () => {
@@ -50,29 +54,39 @@ const Account = () => {
         {/* Header */}
         <View
           style={{
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
+            paddingHorizontal: wp("5%"), // Responsive (was 20)
+            paddingVertical: hp("2%"), // Responsive (was 16)
+            borderBottomWidth: wp("0.25%"), // Responsive (was 1)
             borderBottomColor: "#E5E7EB",
             flexDirection: "row",
             justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Text
-            style={{ fontSize: 24, fontFamily: "Arimo-Bold", color: "#111827" }}
+            style={{
+              fontSize: wp("6%"), // Responsive (was 24)
+              fontFamily: "Arimo-Bold",
+              color: "#111827",
+            }}
           >
             Account
           </Text>
           <Pressable
-            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: wp("1%"), // Responsive (was 4)
+            }}
             onPress={() => {
               router.navigate("/Authentication/Welcome");
             }}
           >
-            <SvgLogout />
+            <SvgLogout width={wp("4.5%")} height={wp("4.5%")} />
+            {/* Responsive icon */}
             <Text
               style={{
-                fontSize: 14,
+                fontSize: wp("3.5%"), // Responsive (was 14)
                 fontFamily: "Arimo-Regular",
                 color: "#E7000B",
               }}
@@ -85,8 +99,8 @@ const Account = () => {
         {/* Profile Section */}
         <View
           style={{
-            padding: 20,
-            borderBottomWidth: 1,
+            padding: wp("5%"), // Responsive (was 20)
+            borderBottomWidth: wp("0.25%"), // Responsive (was 1)
             borderBottomColor: "#F3F4F6",
           }}
         >
@@ -94,18 +108,18 @@ const Account = () => {
             {/* Profile Icon with Initials */}
             <View
               style={{
-                width: 60,
-                height: 60,
-                borderRadius: 30,
+                width: wp("15%"), // Responsive (was 60)
+                height: wp("15%"), // Responsive (was 60)
+                borderRadius: wp("7.5%"), // Half of width for perfect circle
                 backgroundColor: "#F1C02C",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 16,
+                marginRight: wp("4%"), // Responsive (was 16)
               }}
             >
               <Text
                 style={{
-                  fontSize: 24,
+                  fontSize: wp("6%"), // Responsive (was 24)
                   fontFamily: "Arimo-Bold",
                   color: "#ffffff",
                 }}
@@ -118,7 +132,7 @@ const Account = () => {
             <View style={{ flex: 1 }}>
               <Text
                 style={{
-                  fontSize: 20,
+                  fontSize: wp("5%"), // Responsive (was 20)
                   fontFamily: "Arimo-Bold",
                   color: "#111827",
                 }}
@@ -127,10 +141,10 @@ const Account = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Regular",
                   color: "#6B7280",
-                  marginTop: 2,
+                  marginTop: hp("0.25%"), // Responsive (was 2)
                 }}
               >
                 {user.email}
@@ -141,7 +155,7 @@ const Account = () => {
             <TouchableOpacity>
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Medium",
                   color: "#F1C02C",
                 }}
@@ -155,8 +169,8 @@ const Account = () => {
         {/* My Vehicles Section */}
         <View
           style={{
-            padding: 20,
-            borderBottomWidth: 1,
+            padding: wp("5%"), // Responsive (was 20)
+            borderBottomWidth: wp("0.25%"), // Responsive (was 1)
             borderBottomColor: "#F3F4F6",
           }}
         >
@@ -165,12 +179,12 @@ const Account = () => {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 16,
+              marginBottom: hp("2%"), // Responsive (was 16)
             }}
           >
             <Text
               style={{
-                fontSize: 18,
+                fontSize: wp("4.5%"), // Responsive (was 18)
                 fontFamily: "Arimo-Bold",
                 color: "#111827",
               }}
@@ -180,13 +194,17 @@ const Account = () => {
             <TouchableOpacity
               style={{ flexDirection: "row", alignItems: "center" }}
             >
-              <SvgPlus width={16} height={16} color="#F1C02C" />
+              <SvgPlus
+                width={wp("4%")} // Responsive (was 16)
+                height={wp("4%")} // Responsive (was 16)
+                color="#F1C02C"
+              />
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Medium",
                   color: "#F1C02C",
-                  marginLeft: 4,
+                  marginLeft: wp("1%"), // Responsive (was 4)
                 }}
               >
                 Add new
@@ -200,11 +218,11 @@ const Account = () => {
               flexDirection: "row",
               alignItems: "center",
               backgroundColor: "#FFFDF6",
-              borderWidth: 1,
+              borderWidth: wp("0.25%"), // Responsive (was 1)
               borderColor: "#FDE68A",
-              borderRadius: 12,
-              padding: 16,
-              gap: 8,
+              borderRadius: wp("3%"), // Responsive (was 12)
+              padding: wp("4%"), // Responsive (was 16)
+              gap: wp("2%"), // Responsive (was 8)
             }}
           >
             <InfoBlock Icon={SvgCar} />
@@ -212,7 +230,7 @@ const Account = () => {
             <View style={{ flex: 1 }}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp("4%"), // Responsive (was 16)
                   fontFamily: "Arimo-Bold",
                   color: "#111827",
                 }}
@@ -221,25 +239,29 @@ const Account = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Regular",
                   color: "#6B7280",
-                  marginTop: 2,
+                  marginTop: hp("0.25%"), // Responsive (was 2)
                 }}
               >
                 {vehicle.mileage}
               </Text>
             </View>
 
-            <SvgAngleRight width={20} height={20} color="#9CA3AF" />
+            <SvgAngleRight
+              width={wp("5%")} // Responsive (was 20)
+              height={wp("5%")} // Responsive (was 20)
+              color="#9CA3AF"
+            />
           </TouchableOpacity>
         </View>
 
         {/* My Services Section */}
         <View
           style={{
-            padding: 20,
-            borderBottomWidth: 1,
+            padding: wp("5%"), // Responsive (was 20)
+            borderBottomWidth: wp("0.25%"), // Responsive (was 1)
             borderBottomColor: "#F3F4F6",
           }}
         >
@@ -248,12 +270,12 @@ const Account = () => {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 16,
+              marginBottom: hp("2%"), // Responsive (was 16)
             }}
           >
             <Text
               style={{
-                fontSize: 18,
+                fontSize: wp("4.5%"), // Responsive (was 18)
                 fontFamily: "Arimo-Bold",
                 color: "#111827",
               }}
@@ -267,7 +289,7 @@ const Account = () => {
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Medium",
                   color: "#F1C02C",
                 }}
@@ -283,30 +305,34 @@ const Account = () => {
               flexDirection: "row",
               alignItems: "center",
               backgroundColor: "#FFFDF6",
-              borderWidth: 1,
+              borderWidth: wp("0.25%"), // Responsive (was 1)
               borderColor: "#FDE68A",
-              borderRadius: 12,
-              padding: 16,
+              borderRadius: wp("3%"), // Responsive (was 12)
+              padding: wp("4%"), // Responsive (was 16)
             }}
           >
             <View
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
+                width: wp("12%"), // Responsive (was 48)
+                height: wp("12%"), // Responsive (was 48)
+                borderRadius: wp("6%"), // Half of width for perfect circle
                 backgroundColor: "#F1C02C",
                 justifyContent: "center",
                 alignItems: "center",
-                marginRight: 16,
+                marginRight: wp("4%"), // Responsive (was 16)
               }}
             >
-              <SvgClockBackward width={24} height={24} color="#ffffff" />
+              <SvgClockBackward
+                width={wp("6%")} // Responsive (was 24)
+                height={wp("6%")} // Responsive (was 24)
+                color="#ffffff"
+              />
             </View>
 
             <View style={{ flex: 1 }}>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp("4%"), // Responsive (was 16)
                   fontFamily: "Arimo-Bold",
                   color: "#111827",
                 }}
@@ -315,34 +341,38 @@ const Account = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // Responsive (was 14)
                   fontFamily: "Arimo-Regular",
                   color: "#6B7280",
-                  marginTop: 2,
+                  marginTop: hp("0.25%"), // Responsive (was 2)
                 }}
               >
                 View your past service records
               </Text>
             </View>
 
-            <SvgAngleRight width={20} height={20} color="#9CA3AF" />
+            <SvgAngleRight
+              width={wp("5%")} // Responsive (was 20)
+              height={wp("5%")} // Responsive (was 20)
+              color="#9CA3AF"
+            />
           </TouchableOpacity>
         </View>
 
         {/* Settings Section */}
         <View
           style={{
-            padding: 20,
-            borderBottomWidth: 1,
+            padding: wp("5%"), // Responsive (was 20)
+            borderBottomWidth: wp("0.25%"), // Responsive (was 1)
             borderBottomColor: "#F3F4F6",
           }}
         >
           <Text
             style={{
-              fontSize: 18,
+              fontSize: wp("4.5%"), // Responsive (was 18)
               fontFamily: "Arimo-Bold",
               color: "#111827",
-              marginBottom: 16,
+              marginBottom: hp("2%"), // Responsive (was 16)
             }}
           >
             Settings
@@ -354,18 +384,23 @@ const Account = () => {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
-              paddingVertical: 12,
-              borderBottomWidth: 1,
+              paddingVertical: hp("1.5%"), // Responsive (was 12)
+              borderBottomWidth: wp("0.25%"), // Responsive (was 1)
               borderBottomColor: "#F3F4F6",
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ marginRight: 12 }}>
-                <SvgBell width={24} height={24} color="#6B7280" />
+              <View style={{ marginRight: wp("3%") }}>
+                {/* Responsive (was 12) */}
+                <SvgBell
+                  width={wp("6%")} // Responsive (was 24)
+                  height={wp("6%")} // Responsive (was 24)
+                  color="#6B7280"
+                />
               </View>
               <Text
                 style={{
-                  fontSize: 16,
+                  fontSize: wp("4%"), // Responsive (was 16)
                   fontFamily: "Arimo-Regular",
                   color: "#111827",
                 }}
@@ -382,36 +417,41 @@ const Account = () => {
           </View>
 
           {/* Help and Support Section */}
-          <View style={{ marginTop: 16 }}>
+          <View style={{ marginTop: hp("2%") }}>
+            {/* Responsive (was 16) */}
             <Text
               style={{
-                fontSize: 18,
+                fontSize: wp("4.5%"), // Responsive (was 18)
                 fontFamily: "Arimo-Bold",
                 color: "#111827",
-                marginBottom: 16,
+                marginBottom: hp("2%"), // Responsive (was 16)
               }}
             >
               Help & Support
             </Text>
-
             {/* Help Center */}
             <TouchableOpacity
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                borderBottomWidth: 1,
+                paddingVertical: hp("1.5%"), // Responsive (was 12)
+                borderBottomWidth: wp("0.25%"), // Responsive (was 1)
                 borderBottomColor: "#F3F4F6",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ marginRight: 12 }}>
-                  <SvgQuestionMark width={24} height={24} color="#6B7280" />
+                <View style={{ marginRight: wp("3%") }}>
+                  {/* Responsive (was 12) */}
+                  <SvgQuestionMark
+                    width={wp("6%")} // Responsive (was 24)
+                    height={wp("6%")} // Responsive (was 24)
+                    color="#6B7280"
+                  />
                 </View>
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: wp("4%"), // Responsive (was 16)
                     fontFamily: "Arimo-Regular",
                     color: "#111827",
                   }}
@@ -419,25 +459,33 @@ const Account = () => {
                   Help Center
                 </Text>
               </View>
-              <SvgAngleRight width={20} height={20} color="#9CA3AF" />
+              <SvgAngleRight
+                width={wp("5%")} // Responsive (was 20)
+                height={wp("5%")} // Responsive (was 20)
+                color="#9CA3AF"
+              />
             </TouchableOpacity>
-
             {/* Privacy Policy */}
             <TouchableOpacity
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
+                paddingVertical: hp("1.5%"), // Responsive (was 12)
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ marginRight: 12 }}>
-                  <SvgShield width={24} height={24} color="#6B7280" />
+                <View style={{ marginRight: wp("3%") }}>
+                  {/* Responsive (was 12) */}
+                  <SvgShield
+                    width={wp("6%")} // Responsive (was 24)
+                    height={wp("6%")} // Responsive (was 24)
+                    color="#6B7280"
+                  />
                 </View>
                 <Text
                   style={{
-                    fontSize: 16,
+                    fontSize: wp("4%"), // Responsive (was 16)
                     fontFamily: "Arimo-Regular",
                     color: "#111827",
                   }}
@@ -445,16 +493,25 @@ const Account = () => {
                   Privacy Policy
                 </Text>
               </View>
-              <SvgAngleRight width={20} height={20} color="#9CA3AF" />
+              <SvgAngleRight
+                width={wp("5%")} // Responsive (was 20)
+                height={wp("5%")} // Responsive (was 20)
+                color="#9CA3AF"
+              />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* App Version */}
-        <View style={{ padding: 20, alignItems: "center" }}>
+        <View
+          style={{
+            padding: wp("5%"), // Responsive (was 20)
+            alignItems: "center",
+          }}
+        >
           <Text
             style={{
-              fontSize: 12,
+              fontSize: wp("3%"), // Responsive (was 12)
               fontFamily: "Arimo-Regular",
               color: "#9CA3AF",
             }}

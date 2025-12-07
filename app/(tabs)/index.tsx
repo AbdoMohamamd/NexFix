@@ -2,14 +2,11 @@ import SvgAngleRight from "@/assets/Icons/AngleRight";
 import SvgClock from "@/assets/Icons/Clock";
 import SvgLocation from "@/assets/Icons/Location";
 import { router } from "expo-router";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TabOneScreen() {
@@ -69,36 +66,70 @@ export default function TabOneScreen() {
       <View
         style={{
           flexDirection: "row",
-          gap: 4,
+          gap: wp("1%"), // 4px
           alignItems: "center",
-          paddingHorizontal: 16,
+          paddingHorizontal: wp("4%"), // 16px
+          paddingVertical: hp("1.5%"), // 12px
         }}
       >
         <Image
           source={require("@/assets/images/icon.png")}
-          width={70}
-          height={70}
-          style={{ width: 70, height: 70 }}
+          style={{
+            width: wp("17.5%"), // 70px
+            height: wp("17.5%"), // 70px
+          }}
         />
-        <Text>Dashboard</Text>
+        <Text
+          style={{
+            fontSize: wp("4.5%"), // 18px
+            fontFamily: "Arimo-Bold",
+          }}
+        >
+          Dashboard
+        </Text>
       </View>
-      <View style={{ backgroundColor: "#EFBF2B", padding: 16 }}>
-        <Text style={{ fontSize: 16, fontFamily: "Arimo-Bold" }}>
+
+      <View
+        style={{
+          backgroundColor: "#EFBF2B",
+          padding: wp("4%"), // 16px
+        }}
+      >
+        <Text
+          style={{
+            fontSize: wp("4%"), // 16px
+            fontFamily: "Arimo-Bold",
+          }}
+        >
           Welcome Back, Ayman!
         </Text>
-        <Text style={{ fontSize: 14, fontFamily: "Arimo-Regular" }}>
+        <Text
+          style={{
+            fontSize: wp("3.5%"), // 14px
+            fontFamily: "Arimo-Regular",
+            marginTop: hp("0.5%"), // 2px
+          }}
+        >
           Here are your previous workshops
         </Text>
       </View>
+
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          gap: 8,
-          paddingBottom: 150,
+          paddingHorizontal: wp("4%"), // 16px
+          gap: wp("2%"), // 8px
+          paddingBottom: hp("22%"), // 150px
+          paddingTop: hp("2%"), // 16px
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={{ fontSize: 18, fontFamily: "Arimo-Bold" }}>
+        <Text
+          style={{
+            fontSize: wp("4.5%"), // 18px
+            fontFamily: "Arimo-Bold",
+            marginBottom: hp("1%"), // 8px
+          }}
+        >
           Your Workshop
         </Text>
 
@@ -106,57 +137,85 @@ export default function TabOneScreen() {
           <Pressable
             key={workshop.id}
             style={{
-              padding: 16,
+              padding: wp("4%"), // 16px
               backgroundColor: "#ffffff",
               flexDirection: "row",
-              gap: 8,
-              borderWidth: 1,
+              gap: wp("2%"), // 8px
+              borderWidth: wp("0.25%"), // 1px
               borderColor: "#E5E7EB",
-              borderRadius: 10,
+              borderRadius: wp("2.5%"), // 10px
               justifyContent: "space-between",
             }}
             onPress={() => {
               router.navigate("/Pages/ServiceDetails");
             }}
           >
-            <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ flexDirection: "row", gap: wp("2%") }}>
               <View
                 style={{
-                  padding: 12,
+                  padding: wp("3%"), // 12px
                   backgroundColor: "#F3F4F6",
-                  borderRadius: 10,
+                  borderRadius: wp("2.5%"), // 10px
                 }}
               >
                 <Image
                   source={require("@/assets/images/key.png")}
-                  width={36}
-                  height={36}
-                  style={{ width: 36, height: 36 }}
+                  style={{
+                    width: wp("9%"), // 36px
+                    height: wp("9%"), // 36px
+                  }}
                 />
               </View>
-              <View>
-                <Text style={{ fontFamily: "Arimo-Medium", fontSize: 16 }}>
+              <View >
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("4%"), // 16px
+                  }}
+                >
                   {workshop.name}
                 </Text>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <SvgLocation width={14} height={14} />
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: hp("0.5%"), // 2px
+                  }}
+                >
+                  <SvgLocation
+                    width={wp("3.5%")} // 14px
+                    height={wp("3.5%")} // 14px
+                  />
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 14,
+                      fontSize: wp("3.5%"), // 14px
                       color: "#6A7282",
+                      marginLeft: wp("1%"), // 4px
                     }}
                   >
                     {workshop.location}
                   </Text>
                 </View>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <SvgClock width={12} height={12} />
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: hp("0.5%"), // 2px
+                  }}
+                >
+                  <SvgClock
+                    width={wp("3%")} // 12px
+                    height={wp("3%")} // 12px
+                  />
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 12,
+                      fontSize: wp("3%"), // 12px
                       color: "#6A7282",
+                      marginLeft: wp("1%"), // 4px
                     }}
                   >
                     Last visit: {workshop.lastVisit}
@@ -164,13 +223,18 @@ export default function TabOneScreen() {
                 </View>
               </View>
             </View>
+
             <View
               style={{
                 alignItems: "flex-end",
                 justifyContent: "center",
               }}
             >
-              <SvgAngleRight height={24} width={24} color={"#99A1AF"} />
+              <SvgAngleRight
+                height={wp("6%")} // 24px
+                width={wp("6%")} // 24px
+                color="#99A1AF"
+              />
             </View>
           </Pressable>
         ))}
@@ -178,20 +242,3 @@ export default function TabOneScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});

@@ -7,6 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const CustomTextInput = ({
   title,
@@ -18,9 +22,8 @@ const CustomTextInput = ({
   supportText,
   secureTextEntry,
   onPress,
-  style, // NEW: Accept style prop
+  style,
 }: TextInputProps & { style?: any }) => {
-  // Add style to props
   const colors = {
     default: {
       borderColor: "#E5E7EB",
@@ -51,7 +54,6 @@ const CustomTextInput = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Apply the style here */}
       {title && (
         <Text style={[styles.title, { color: currentColors.titleColor }]}>
           {title}
@@ -72,8 +74,8 @@ const CustomTextInput = ({
           {IconComponent1 && (
             <IconComponent1
               color={currentColors.iconColor}
-              width={24}
-              height={24}
+              width={wp('6%')}   // Responsive icon (was 24)
+              height={wp('6%')}  // Responsive icon (was 24)
             />
           )}
           <RNTextInput
@@ -92,8 +94,8 @@ const CustomTextInput = ({
           <TouchableOpacity onPress={onRightIconPress}>
             <IconComponent2
               color={currentColors.iconColor}
-              width={24}
-              height={24}
+              width={wp('6%')}   // Responsive icon (was 24)
+              height={wp('6%')}  // Responsive icon (was 24)
             />
           </TouchableOpacity>
         )}
@@ -105,40 +107,41 @@ const CustomTextInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%", // Default to full width
+    width: "100%",
   },
   title: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),   // Responsive font (was 14)
     fontFamily: "Arimo-Medium",
-    marginBottom: 6,
+    marginBottom: hp('0.8%'), // Responsive margin (was 6)
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 8,
-    borderWidth: 1.5,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minHeight: 48,
+    borderRadius: wp('2%'),    // Responsive border radius (was 8)
+    borderWidth: wp('0.38%'),  // Responsive border width (was 1.5)
+    paddingHorizontal: wp('3%'), // Responsive padding (was 12)
+    paddingVertical: hp('1%'),   // Responsive padding (was 8)
+    minHeight: hp('6%'),        // Responsive min height (was 48)
   },
   inputContent: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: wp('2%'),             // Responsive gap (was 8)
   },
   input: {
-    fontSize: 16,
+    fontSize: wp('4%'),        // Responsive font (was 16)
     fontFamily: "Arimo-Regular",
     flex: 1,
     padding: 0,
     margin: 0,
     height: "100%",
+    minHeight: hp('4%'),       // Ensure touch target on tablets
   },
   supportText: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: wp('3%'),        // Responsive font (was 12)
+    marginTop: hp('0.5%'),     // Responsive margin (was 4)
     fontFamily: "Arimo-Regular",
     color: "#6A7282",
   },

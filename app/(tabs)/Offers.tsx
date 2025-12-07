@@ -2,6 +2,10 @@ import Button from "@/components/Button";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const Offers = () => {
   const offers = [
@@ -54,15 +58,15 @@ const Offers = () => {
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
+          paddingHorizontal: wp("4%"), // 16px
+          paddingVertical: hp("2%"), // 16px
+          borderBottomWidth: wp("0.25%"), // 1px
           borderBottomColor: "#E5E7EB",
         }}
       >
         <Text
           style={{
-            fontSize: 20,
+            fontSize: wp("5%"), // 20px
             fontFamily: "Arimo-Bold",
           }}
         >
@@ -70,10 +74,10 @@ const Offers = () => {
         </Text>
         <Text
           style={{
-            fontSize: 14,
+            fontSize: wp("3.5%"), // 14px
             fontFamily: "Arimo-Regular",
             color: "#6A7282",
-            marginTop: 4,
+            marginTop: hp("0.5%"), // 4px
           }}
         >
           Promotions and rewards for our valued customers
@@ -82,9 +86,9 @@ const Offers = () => {
 
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          gap: 16,
+          paddingHorizontal: wp("4%"), // 16px
+          paddingVertical: hp("2%"), // 16px
+          gap: hp("2%"), // 16px
           backgroundColor: "#FFF9E6",
         }}
         showsVerticalScrollIndicator={false}
@@ -94,20 +98,21 @@ const Offers = () => {
             key={offer.id}
             style={{
               backgroundColor: "#ffffff",
-              borderRadius: 12,
-              borderWidth: 1,
+              borderRadius: wp("3%"), // 12px
+              borderWidth: wp("0.25%"), // 1px
               borderColor: "#F4C430",
               overflow: "hidden",
-              padding:12
+              padding: wp("3%"), // 12px
             }}
           >
-            <View style={{ padding: 16, paddingTop: 0 }}>
-              <View style={{ marginBottom: 12 }}>
+            <View style={{ padding: wp("4%"), paddingTop: 0 }}>
+              <View style={{ marginBottom: hp("1.5%") }}>
+                {/* 12px */}
                 <Text
                   style={{
                     fontFamily: "Arimo-Bold",
-                    fontSize: 18,
-                    marginBottom: 8,
+                    fontSize: wp("4.5%"), // 18px
+                    marginBottom: hp("1%"), // 8px
                   }}
                 >
                   {offer.title}
@@ -115,9 +120,9 @@ const Offers = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Regular",
-                    fontSize: 14,
+                    fontSize: wp("3.5%"), // 14px
                     color: "#6A7282",
-                    lineHeight: 20,
+                    lineHeight: hp("2.5%"), // 20px
                   }}
                 >
                   {offer.description}
@@ -127,9 +132,9 @@ const Offers = () => {
               {/* Light Yellow Line */}
               <View
                 style={{
-                  height: 1,
+                  height: wp("0.25%"), // 1px
                   backgroundColor: "#eedb9dff",
-                  marginVertical: 12,
+                  marginVertical: hp("1.5%"), // 12px
                 }}
               />
 
@@ -144,9 +149,9 @@ const Offers = () => {
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 12,
+                      fontSize: wp("3%"), // 12px
                       color: "#6A7282",
-                      marginBottom: 2,
+                      marginBottom: hp("0.25%"), // 2px
                     }}
                   >
                     Expires
@@ -154,7 +159,7 @@ const Offers = () => {
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 14,
+                      fontSize: wp("3.5%"), // 14px
                       color: "#111827",
                     }}
                   >
@@ -162,7 +167,12 @@ const Offers = () => {
                   </Text>
                 </View>
 
-                <Button text="Redeem" type="secondary" size={"medium"} onPress={()=>{}}/>
+                <Button
+                  text="Redeem"
+                  type="secondary"
+                  size={"medium"}
+                  onPress={() => {}}
+                />
               </View>
             </View>
           </View>

@@ -2,6 +2,7 @@ import SvgInvoice from "@/assets/Icons/Invoice";
 import SvgPhoto from "@/assets/Icons/Photo";
 import SvgStar from "@/assets/Icons/Star";
 import Button from "@/components/Button";
+import Header from "@/components/Header";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -12,6 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 
 const ServicesHistory = () => {
   // Sample service history data
@@ -60,13 +65,12 @@ const ServicesHistory = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      {/* Header */}
-
+      <Header title="Services History" goBack={true} />
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          gap: 12,
+          paddingHorizontal: wp("4%"), // 16px
+          paddingVertical: hp("2%"), // 16px
+          gap: hp("1.5%"), // 12px
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -75,18 +79,18 @@ const ServicesHistory = () => {
             key={service.id}
             style={{
               backgroundColor: "#ffffff",
-              borderWidth: 1,
+              borderWidth: wp("0.25%"), // 1px
               borderColor: "#E5E7EB",
-              borderRadius: 10,
+              borderRadius: wp("2.5%"), // 10px
               overflow: "hidden",
-              padding: 12,
+              padding: wp("3%"), // 12px
             }}
           >
             {/* Service Card Content */}
             <Pressable
               style={{
                 flexDirection: "row",
-                gap: 12,
+                gap: wp("3%"), // 12px
                 justifyContent: "space-between",
               }}
               onPress={() => {
@@ -96,18 +100,21 @@ const ServicesHistory = () => {
               {/* Left side with image */}
               <View
                 style={{
-                  padding: 12,
+                  padding: wp("3%"), // 12px
                   backgroundColor: "#F3F4F6",
-                  borderRadius: 10,
-                  width: 60,
-                  height: 60,
+                  borderRadius: wp("2.5%"), // 10px
+                  width: wp("15%"), // 60px
+                  height: wp("15%"), // 60px
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
                 <Image
                   source={require("@/assets/images/key.png")}
-                  style={{ width: 36, height: 36 }}
+                  style={{
+                    width: wp("9%"), // 36px
+                    height: wp("9%"), // 36px
+                  }}
                 />
               </View>
 
@@ -116,8 +123,8 @@ const ServicesHistory = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Bold",
-                    fontSize: 16,
-                    marginBottom: 4,
+                    fontSize: wp("4%"), // 16px
+                    marginBottom: hp("0.5%"), // 4px
                   }}
                 >
                   {service.serviceType}
@@ -125,9 +132,9 @@ const ServicesHistory = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 14,
+                    fontSize: wp("3.5%"), // 14px
                     color: "#6A7282",
-                    marginBottom: 4,
+                    marginBottom: hp("0.5%"), // 4px
                   }}
                 >
                   {service.workshop}
@@ -136,14 +143,14 @@ const ServicesHistory = () => {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: 8,
-                    marginBottom: 4,
+                    gap: wp("2%"), // 8px
+                    marginBottom: hp("0.5%"), // 4px
                   }}
                 >
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 12,
+                      fontSize: wp("3%"), // 12px
                       color: "#6A7282",
                     }}
                   >
@@ -152,15 +159,15 @@ const ServicesHistory = () => {
                   <View
                     style={{
                       backgroundColor: "#D1FAE5",
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      borderRadius: 4,
+                      paddingHorizontal: wp("2%"), // 8px
+                      paddingVertical: hp("0.25%"), // 2px
+                      borderRadius: wp("1%"), // 4px
                     }}
                   >
                     <Text
                       style={{
                         fontFamily: "Arimo-Medium",
-                        fontSize: 10,
+                        fontSize: wp("2.5%"), // 10px
                         color: "#065F46",
                       }}
                     >
@@ -179,8 +186,8 @@ const ServicesHistory = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Bold",
-                    fontSize: 18,
-                    color: "#F1C02C", // Changed to yellow
+                    fontSize: wp("4.5%"), // 18px
+                    color: "#F1C02C",
                   }}
                 >
                   {service.price}
@@ -191,9 +198,9 @@ const ServicesHistory = () => {
             {/* Yellow Separator Line */}
             <View
               style={{
-                height: 1,
+                height: wp("0.25%"), // 1px
                 backgroundColor: "#F1C02C",
-                marginVertical: 12,
+                marginVertical: hp("1.5%"), // 12px
               }}
             />
 
@@ -202,22 +209,26 @@ const ServicesHistory = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 20,
-                marginBottom: 12,
+                gap: wp("5%"), // 20px
+                marginBottom: hp("1.5%"), // 12px
               }}
             >
               {/* Invoice */}
               <TouchableOpacity
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: wp("1.5%"),
+                }} // 6px
                 onPress={() => {
                   // View invoice action
                 }}
               >
-                <SvgInvoice />
+                <SvgInvoice width={wp("5%")} height={wp("5%")} /> {/* 20px */}
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 12,
+                    fontSize: wp("3%"), // 12px
                     color: "#6A7282",
                   }}
                 >
@@ -227,16 +238,20 @@ const ServicesHistory = () => {
 
               {/* Photos */}
               <TouchableOpacity
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: wp("1.5%"),
+                }} // 6px
                 onPress={() => {
                   // View photos action
                 }}
               >
-                <SvgPhoto />
+                <SvgPhoto width={wp("5%")} height={wp("5%")} /> {/* 20px */}
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 12,
+                    fontSize: wp("3%"), // 12px
                     color: "#6A7282",
                   }}
                 >
@@ -246,7 +261,8 @@ const ServicesHistory = () => {
             </View>
 
             {/* Buttons Section - Stacked vertically under Invoice/Photos */}
-            <View style={{ gap: 8 }}>
+            <View style={{ gap: hp("1%") }}>
+              {/* 8px */}
               {/* Rate Button */}
               <Button
                 onPress={() => {}}
@@ -265,7 +281,6 @@ const ServicesHistory = () => {
                 wrap={false}
                 Icon={SvgStar}
               />
-              {/* Book Again Button */}
             </View>
           </View>
         ))}

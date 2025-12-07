@@ -1,13 +1,16 @@
-import { useRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import React, { memo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 
 import SvgCalendar from "@/assets/Icons/Calendar";
 import SvgHomeAlt from "@/assets/Icons/HomeAlt";
+import SvgTag from "@/assets/Icons/Tag";
 import SvgUser from "@/assets/Icons/User";
 import { BottomNavbarIconProps } from "@/assets/utils/Components/Types";
-import SvgTag from "@/assets/Icons/Tag";
 
 const TAB_CONFIG = [
   { name: "index", title: "Home", Icon: SvgHomeAlt, label: "Home" },
@@ -27,23 +30,7 @@ const BottomNavbar = memo(() => {
         tabBarHideOnKeyboard: true,
       }}
     >
-      {/* First two tabs (left side) */}
-      {TAB_CONFIG.slice(0, 2).map((tab) => (
-        <Tabs.Screen
-          key={tab.name}
-          name={tab.name}
-          options={{
-            headerShown: false,
-            title: tab.title,
-            tabBarIcon: ({ color }) => (
-              <TabBarIcon Icon={tab.Icon} color={color} />
-            ),
-          }}
-        />
-      ))}
-
-      {/* Last two tabs (right side) */}
-      {TAB_CONFIG.slice(2).map((tab) => (
+      {TAB_CONFIG.map((tab) => (
         <Tabs.Screen
           key={tab.name}
           name={tab.name}
@@ -59,14 +46,16 @@ const BottomNavbar = memo(() => {
     </Tabs>
   );
 });
+
 const TabBarIcon = memo(({ Icon, color }: BottomNavbarIconProps) => (
-  <Icon color={color} width={28} height={28} />
+  <Icon
+    color={color}
+    width={wp("7%")} // Responsive icon width (was 28)
+    height={wp("7%")} // Responsive icon height (was 28)
+  />
 ));
 
 const TabButton = memo(({ children, onPress, styles }: any) => {
-  const route = useRoute();
-  const currentTab = TAB_CONFIG.find((tab) => tab.name === route.name);
-
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.centered}>{children}</View>
@@ -74,7 +63,7 @@ const TabButton = memo(({ children, onPress, styles }: any) => {
   );
 });
 
-// Dynamic styles function
+// Responsive styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -89,23 +78,24 @@ const styles = StyleSheet.create({
   tabBar: {
     elevation: 0,
     shadowOpacity: 0,
-    borderTopWidth: 1,
+    borderTopWidth: wp("0.3%"), // Responsive border (was 1)
     borderTopColor: "#E5E7EB",
-    height: 72,
+    height: hp("9%"), // Responsive height (was 72)
+    minHeight: hp("9%"), // Ensure minimum height on small screens
   },
   label: {
-    fontSize: 12,
+    fontSize: wp("3%"), // Responsive font size (was 12)
     fontFamily: "Sfpro-regular",
     position: "absolute",
-    top: "65%",
+    top: "65%", // Percentage remains the same
   },
   floatingButton: {
-    width: 48,
-    height: 48,
-    borderWidth: 2,
+    width: wp("12%"), // Responsive width (was 48)
+    height: wp("12%"), // Responsive height (was 48)
+    borderWidth: wp("0.5%"), // Responsive border (was 2)
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 100,
+    borderRadius: wp("25%"), // Half of width for perfect circle
   },
 });
 

@@ -1,5 +1,6 @@
 import SvgStar from "@/assets/Icons/Star";
 import Button from "@/components/Button";
+import Header from "@/components/Header";
 import React, { useState } from "react";
 import {
   Image,
@@ -9,6 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 
 const RateService = () => {
   const [rating, setRating] = useState(0);
@@ -28,52 +33,54 @@ const RateService = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <Header title="Rate Service" goBack={true} />
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          gap: 16,
+          paddingHorizontal: wp("4%"), // 16px
+          paddingVertical: hp("2%"), // 16px
+          gap: hp("2%"), // 16px
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-
         {/* Service Card */}
         <View
           style={{
             backgroundColor: "#ffffff",
-            borderWidth: 1,
+            borderWidth: wp("0.25%"), // 1px
             borderColor: "#E5E7EB",
-            borderRadius: 10,
-            padding: 12,
+            borderRadius: wp("2.5%"), // 10px
+            padding: wp("3%"), // 12px
           }}
         >
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: wp("3%") }}>
+            {/* 12px */}
             {/* Left side with image */}
             <View
               style={{
-                padding: 12,
+                padding: wp("3%"), // 12px
                 backgroundColor: "#F3F4F6",
-                borderRadius: 10,
-                width: 60,
-                height: 60,
+                borderRadius: wp("2.5%"), // 10px
+                width: wp("15%"), // 60px
+                height: wp("15%"), // 60px
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
               <Image
                 source={require("@/assets/images/key.png")}
-                style={{ width: 36, height: 36 }}
+                style={{
+                  width: wp("9%"), // 36px
+                  height: wp("9%"), // 36px
+                }}
               />
             </View>
-
             {/* Middle section with service info */}
             <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontFamily: "Arimo-Bold",
-                  fontSize: 16,
-                  marginBottom: 4,
+                  fontSize: wp("4%"), // 16px
+                  marginBottom: hp("0.5%"), // 4px
                 }}
               >
                 {service.serviceType}
@@ -81,9 +88,9 @@ const RateService = () => {
               <Text
                 style={{
                   fontFamily: "Arimo-Medium",
-                  fontSize: 14,
+                  fontSize: wp("3.5%"), // 14px
                   color: "#6A7282",
-                  marginBottom: 4,
+                  marginBottom: hp("0.5%"), // 4px
                 }}
               >
                 {service.workshop}
@@ -92,14 +99,14 @@ const RateService = () => {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 8,
-                  marginBottom: 4,
+                  gap: wp("2%"), // 8px
+                  marginBottom: hp("0.5%"), // 4px
                 }}
               >
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 12,
+                    fontSize: wp("3%"), // 12px
                     color: "#6A7282",
                   }}
                 >
@@ -107,8 +114,6 @@ const RateService = () => {
                 </Text>
               </View>
             </View>
-
-            {/* Right side with price */}
           </View>
         </View>
 
@@ -116,14 +121,18 @@ const RateService = () => {
         <View
           style={{
             backgroundColor: "#ffffff",
-            borderWidth: 1,
+            borderWidth: wp("0.25%"), // 1px
             borderColor: "#E5E7EB",
-            borderRadius: 10,
-            padding: 16,
+            borderRadius: wp("2.5%"), // 10px
+            padding: wp("4%"), // 16px
           }}
         >
           <Text
-            style={{ fontFamily: "Arimo-Bold", fontSize: 16, marginBottom: 12 }}
+            style={{
+              fontFamily: "Arimo-Bold",
+              fontSize: wp("4%"), // 16px
+              marginBottom: hp("1.5%"), // 12px
+            }}
           >
             How was your experience?
           </Text>
@@ -133,8 +142,8 @@ const RateService = () => {
             style={{
               flexDirection: "row",
               justifyContent: "center",
-              gap: 8,
-              marginBottom: 8,
+              gap: wp("2%"), // 8px
+              marginBottom: hp("1%"), // 8px
             }}
           >
             {[1, 2, 3, 4, 5].map((star) => (
@@ -145,8 +154,8 @@ const RateService = () => {
                 onPressOut={() => setHoverRating(0)}
               >
                 <SvgStar
-                  width={40}
-                  height={40}
+                  width={wp("10%")} // 40px
+                  height={wp("10%")} // 40px
                   fill={star <= (hoverRating || rating) ? "#F1C02C" : "#ffffff"}
                 />
               </TouchableOpacity>
@@ -157,9 +166,9 @@ const RateService = () => {
             style={{
               textAlign: "center",
               fontFamily: "Arimo-Medium",
-              fontSize: 12,
+              fontSize: wp("3%"), // 12px
               color: "#6A7282",
-              marginTop: 4,
+              marginTop: hp("0.5%"), // 4px
             }}
           >
             Tap to rate this service
@@ -170,28 +179,32 @@ const RateService = () => {
         <View
           style={{
             backgroundColor: "#ffffff",
-            borderWidth: 1,
+            borderWidth: wp("0.25%"), // 1px
             borderColor: "#E5E7EB",
-            borderRadius: 10,
-            padding: 16,
+            borderRadius: wp("2.5%"), // 10px
+            padding: wp("4%"), // 16px
           }}
         >
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              marginBottom: 8,
+              marginBottom: hp("1%"), // 8px
             }}
           >
             <Text
-              style={{ fontFamily: "Arimo-Bold", fontSize: 16, marginRight: 4 }}
+              style={{
+                fontFamily: "Arimo-Bold",
+                fontSize: wp("4%"), // 16px
+                marginRight: wp("1%"), // 4px
+              }}
             >
               Share your feedback
             </Text>
             <Text
               style={{
                 fontFamily: "Arimo-Regular",
-                fontSize: 12,
+                fontSize: wp("3%"), // 12px
                 color: "#6A7282",
               }}
             >
@@ -201,13 +214,13 @@ const RateService = () => {
 
           <TextInput
             style={{
-              height: 100,
-              borderWidth: 1,
+              height: hp("12.5%"), // 100px
+              borderWidth: wp("0.25%"), // 1px
               borderColor: "#E5E7EB",
-              borderRadius: 8,
-              padding: 12,
+              borderRadius: wp("2%"), // 8px
+              padding: wp("3%"), // 12px
               fontFamily: "Arimo-Regular",
-              fontSize: 14,
+              fontSize: wp("3.5%"), // 14px
               color: "#111827",
               textAlignVertical: "top",
             }}
@@ -221,7 +234,8 @@ const RateService = () => {
         </View>
 
         {/* Submit Button */}
-        <View style={{ marginTop: 8 }}>
+        <View style={{ marginTop: hp("1%") }}>
+          {/* 8px */}
           <Button
             onPress={() => {
               // Handle submit review

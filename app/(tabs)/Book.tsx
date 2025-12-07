@@ -12,6 +12,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const Book = () => {
   const [selectedService, setSelectedService] = useState("All Services");
@@ -69,10 +73,10 @@ const Book = () => {
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
+          paddingHorizontal: wp("4%"), // Responsive (was 16)
+          paddingTop: hp("1.5%"), // Responsive (was 12)
+          paddingBottom: hp("2%"), // Responsive (was 16)
+          borderBottomWidth: wp("0.25%"), // Responsive (was 1)
           borderBottomColor: "#E5E7EB",
         }}
       >
@@ -82,21 +86,25 @@ const Book = () => {
             flexDirection: "row",
             alignItems: "center",
             backgroundColor: "#ffffff",
-            borderWidth: 1,
+            borderWidth: wp("0.25%"), // Responsive (was 1)
             borderColor: "#E5E7EB",
-            borderRadius: 100,
-            paddingHorizontal: 16,
-            height: 48,
-            marginBottom: 16,
+            borderRadius: wp("25%"), // Half of height for pill shape
+            paddingHorizontal: wp("4%"), // Responsive (was 16)
+            height: hp("6%"), // Responsive (was 48)
+            marginBottom: hp("2%"), // Responsive (was 16)
           }}
         >
-          <SvgSearch width={20} height={20} color="#9CA3AF" />
+          <SvgSearch
+            width={wp("5%")} // Responsive (was 20)
+            height={wp("5%")} // Responsive (was 20)
+            color="#9CA3AF"
+          />
           <TextInput
             style={{
               flex: 1,
-              paddingVertical: 12,
-              paddingHorizontal: 12,
-              fontSize: 16,
+              paddingVertical: hp("1.5%"), // Responsive (was 12)
+              paddingHorizontal: wp("3%"), // Responsive (was 12)
+              fontSize: wp("4%"), // Responsive (was 16)
               fontFamily: "Arimo-Regular",
             }}
             placeholder="Search services or mechanics"
@@ -110,19 +118,20 @@ const Book = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: hp("2%") }} // Responsive (was 16)
         >
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flexDirection: "row", gap: wp("2%") }}>
+            {/* Responsive (was 8) */}
             {services.map((service) => (
               <Pressable
                 key={service}
                 style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
+                  paddingHorizontal: wp("4%"), // Responsive (was 16)
+                  paddingVertical: hp("1%"), // Responsive (was 8)
                   backgroundColor:
                     selectedService === service ? "#EFBF2B" : "#ffffff",
-                  borderRadius: 100,
-                  borderWidth: 1,
+                  borderRadius: wp("25%"), // Pill shape
+                  borderWidth: wp("0.25%"), // Responsive (was 1)
                   borderColor:
                     selectedService === service ? "#EFBF2B" : "#E5E7EB",
                 }}
@@ -131,7 +140,7 @@ const Book = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: 14,
+                    fontSize: wp("3.5%"), // Responsive (was 14)
                     color: selectedService === service ? "#000000" : "#374151",
                   }}
                 >
@@ -150,7 +159,12 @@ const Book = () => {
             alignItems: "center",
           }}
         >
-          <Text style={{ fontFamily: "Arimo-Medium", fontSize: 16 }}>
+          <Text
+            style={{
+              fontFamily: "Arimo-Medium",
+              fontSize: wp("4%"), // Responsive (was 16)
+            }}
+          >
             {mechanics.length} Mechanics Available
           </Text>
         </View>
@@ -159,9 +173,9 @@ const Book = () => {
       {/* Mechanics List */}
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          gap: 12,
+          paddingHorizontal: wp("4%"), // Responsive (was 16)
+          paddingVertical: hp("2%"), // Responsive (was 16)
+          gap: hp("1.5%"), // Responsive (was 12)
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -170,24 +184,33 @@ const Book = () => {
           <View
             key={mechanic.id}
             style={{
-              padding: 16,
+              padding: wp("4%"), // Responsive (was 16)
               backgroundColor: "#ffffff",
-              borderRadius: 10,
-              borderWidth: 1,
+              borderRadius: wp("2.5%"), // Responsive (was 10)
+              borderWidth: wp("0.25%"), // Responsive (was 1)
               borderColor: "#E5E7EB",
             }}
           >
-            <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                gap: wp("3%"), // Responsive (was 12)
+                marginBottom: hp("1.5%"), // Responsive (was 12)
+              }}
+            >
               <View
                 style={{
-                  padding: 12,
+                  padding: wp("3%"), // Responsive (was 12)
                   backgroundColor: "#F3F4F6",
-                  borderRadius: 10,
+                  borderRadius: wp("2.5%"), // Responsive (was 10)
                 }}
               >
                 <Image
                   source={require("@/assets/images/key.png")}
-                  style={{ width: 36, height: 36 }}
+                  style={{
+                    width: wp("9%"), // Responsive (was 36)
+                    height: wp("9%"), // Responsive (was 36)
+                  }}
                 />
               </View>
 
@@ -197,14 +220,14 @@ const Book = () => {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "flex-start",
-                    marginBottom: 4,
+                    marginBottom: hp("0.5%"), // Responsive (was 4)
                   }}
                 >
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
                         fontFamily: "Arimo-Medium",
-                        fontSize: 16,
+                        fontSize: wp("4%"), // Responsive (was 16)
                       }}
                     >
                       {mechanic.name}
@@ -213,16 +236,20 @@ const Book = () => {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        marginTop: 2,
+                        marginTop: hp("0.25%"), // Responsive (was 2)
                       }}
                     >
-                      <SvgStarIcon width={16} height={16} color="#F59E0B" />
+                      <SvgStarIcon
+                        width={wp("4%")} // Responsive (was 16)
+                        height={wp("4%")} // Responsive (was 16)
+                        color="#F59E0B"
+                      />
                       <Text
                         style={{
                           fontFamily: "Arimo-Medium",
-                          fontSize: 14,
+                          fontSize: wp("3.5%"), // Responsive (was 14)
                           color: "#111827",
-                          marginLeft: 4,
+                          marginLeft: wp("1%"), // Responsive (was 4)
                         }}
                       >
                         {mechanic.rating}
@@ -234,7 +261,7 @@ const Book = () => {
                     <Text
                       style={{
                         fontFamily: "Arimo-Bold",
-                        fontSize: 18,
+                        fontSize: wp("4.5%"), // Responsive (was 18)
                         color: "#EFBF2B",
                       }}
                     >
@@ -244,24 +271,24 @@ const Book = () => {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        marginTop: 2,
+                        marginTop: hp("0.25%"), // Responsive (was 2)
                       }}
                     >
                       <View
                         style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 3,
+                          width: wp("1.5%"), // Responsive (was 6)
+                          height: wp("1.5%"), // Responsive (was 6)
+                          borderRadius: wp("0.75%"), // Half of width
                           backgroundColor: mechanic.isAvailable
                             ? "#10B981"
                             : "#EF4444",
-                          marginRight: 4,
+                          marginRight: wp("1%"), // Responsive (was 4)
                         }}
                       />
                       <Text
                         style={{
                           fontFamily: "Arimo-Medium",
-                          fontSize: 14,
+                          fontSize: wp("3.5%"), // Responsive (was 14)
                           color: mechanic.isAvailable ? "#10B981" : "#EF4444",
                         }}
                       >
@@ -275,17 +302,21 @@ const Book = () => {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    marginTop: 4,
+                    marginTop: hp("0.5%"), // Responsive (was 4)
                   }}
                 >
-                  <SvgLocation width={14} height={14} color="#6A7282" />
+                  <SvgLocation
+                    width={wp("3.5%")} // Responsive (was 14)
+                    height={wp("3.5%")} // Responsive (was 14)
+                    color="#6A7282"
+                  />
 
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: 14,
+                      fontSize: wp("3.5%"), // Responsive (was 14)
                       color: "#111827",
-                      marginLeft: 8,
+                      marginLeft: wp("2%"), // Responsive (was 8)
                     }}
                   >
                     {mechanic.distance}
@@ -297,9 +328,9 @@ const Book = () => {
             {/* Separator Line */}
             <View
               style={{
-                height: 1,
+                height: wp("0.25%"), // Responsive (was 1)
                 backgroundColor: "#E5E7EB",
-                marginVertical: 12,
+                marginVertical: hp("1.5%"), // Responsive (was 12)
               }}
             />
 

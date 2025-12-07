@@ -4,28 +4,61 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { Image, Text, View } from "react-native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const Welcome = () => {
   return (
     <View
-      style={{ paddingHorizontal: 24, justifyContent: "flex-end", flex: 1 }}
+      style={{
+        paddingHorizontal: wp("6%"), // 24px
+        justifyContent: "flex-end",
+        flex: 1,
+      }}
     >
       <StatusBar style="inverted" />
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <Image
           source={require("@/assets/images/icon.png")}
-          width={128}
-          height={128}
-          style={{ width: 200, height: 200 }}
+          style={{
+            width: wp("50%"), // 200px
+            height: wp("50%"), // 200px
+          }}
         />
-        <Text style={{ fontFamily: "Arimo-Bold", fontSize: 24 }}>
+        <Text
+          style={{
+            fontFamily: "Arimo-Bold",
+            fontSize: wp("6%"), // 24px
+            marginTop: hp("2%"), // 16px
+          }}
+        >
           Welcome to NEXFIX
         </Text>
-        <Text style={{ fontFamily: "Arimo-Regular", fontSize: 14 }}>
+        <Text
+          style={{
+            fontFamily: "Arimo-Regular",
+            fontSize: wp("3.5%"), // 14px
+            color: "#6A7282",
+            marginTop: hp("0.5%"), // 4px
+          }}
+        >
           Your trusted car service partner
         </Text>
       </View>
-      <View style={{ gap: 12, paddingBottom: 24 }}>
+      <View
+        style={{
+          gap: hp("1.5%"), // 12px
+          paddingBottom: hp("3%"), // 24px
+        }}
+      >
         <Button
           onPress={() => {
             router.navigate("/Authentication/Register");
@@ -44,19 +77,26 @@ const Welcome = () => {
         />
         <Button
           onPress={() => {
-            console.log("make phone call to number")
+            console.log("make phone call to number");
           }}
           text="Call Us"
           wrap={false}
           type="ternary"
           Icon={SvgPhone}
         />
-        <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: wp("4%"), // 16px
+          }}
+        >
           <Text
             style={{
               fontFamily: "Arimo-regular",
-              fontSize: 12,
+              fontSize: wp("3%"), // 12px
               color: "#6A7282",
+              textAlign: "center",
             }}
           >
             By continuing, you agree to our Terms & Privacy Policy
