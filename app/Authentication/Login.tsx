@@ -24,7 +24,7 @@ import { router } from "expo-router";
 import { useAuth } from "../Context/AuthProvider";
 
 const Login = () => {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading,user } = useAuth();
 
   // State for email and password
   const [email, setEmail] = useState("");

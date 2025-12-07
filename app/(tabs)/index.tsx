@@ -8,8 +8,11 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../Context/AuthProvider";
 
 export default function TabOneScreen() {
+  const { user,token } = useAuth();
+  console.log(token)
   const workshops = [
     {
       id: 1,
@@ -101,7 +104,7 @@ export default function TabOneScreen() {
             fontFamily: "Arimo-Bold",
           }}
         >
-          Welcome Back, Ayman!
+          Welcome Back, {user?.accUserName}
         </Text>
         <Text
           style={{
@@ -166,7 +169,7 @@ export default function TabOneScreen() {
                   }}
                 />
               </View>
-              <View >
+              <View>
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",

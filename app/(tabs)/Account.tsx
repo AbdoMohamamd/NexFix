@@ -22,10 +22,11 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "../Context/AuthProvider";
 
 const Account = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
+  const { logout } = useAuth();
   // User data (in real app, this would come from auth context/state)
   const user = {
     firstName: "John",
@@ -79,6 +80,7 @@ const Account = () => {
               gap: wp("1%"), // Responsive (was 4)
             }}
             onPress={() => {
+              logout();
               router.navigate("/Authentication/Welcome");
             }}
           >

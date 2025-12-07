@@ -2,7 +2,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 // Base URL for your API
-const API_BASE_URL = "http://siblani-001-site6.atempurl.com/api/nexfix_api/";
+const API_BASE_URL =
+  "http://siblani-001-site6.atempurl.com/api/nexfix_api/";
 
 // Create axios instance
 const api = axios.create({

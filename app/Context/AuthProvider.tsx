@@ -104,9 +104,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(null);
 
       // Navigate to login
-      router.replace("/Authentication/Login");
+      router.replace("/Authentication/Welcome");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.log("Logout error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -123,3 +123,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+export default AuthProvider;

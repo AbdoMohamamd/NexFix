@@ -10,10 +10,6 @@ import { AuthProvider, useAuth } from "./Context/AuthProvider";
 
 export { ErrorBoundary } from "expo-router";
 
-export const unstable_settings = {
-  initialRouteName: "(tabs)",
-};
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -77,8 +73,27 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* Public routes */}
+    <Stack
+      screenOptions={{ headerShown: false }}
+      initialRouteName={isAuthenticated ? "(tabs)" : "Authentication/Welcome"}
+    >
+      {/* If authenticated, show main app */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="Pages/ServiceDetails"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Pages/ServicesHistory"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Pages/RateService"
+        options={{
+          title: "Rate This Service",
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="Authentication/Welcome"
         options={{ headerShown: false }}
@@ -91,43 +106,6 @@ function RootLayoutNav() {
         name="Authentication/Login"
         options={{ headerShown: false }}
       />
-
-      {/* Protected routes */}
-      {isAuthenticated ? (
-        // User is authenticated - show main app
-        <>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="Pages/ServiceDetails"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Pages/ServicesHistory"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Pages/RateService"
-            options={{
-              title: "Rate This Service",
-              headerShown: false,
-            }}
-          />
-        </>
-      ) : (
-        // User is not authenticated - redirect to login
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-          redirect={true}
-          listeners={{
-            focus: () => {
-              // This will redirect to login when trying to access main app
-              const router = require("expo-router").router;
-              router.replace("/Authentication/Welcome");
-            },
-          }}
-        />
-      )}
     </Stack>
   );
 }
