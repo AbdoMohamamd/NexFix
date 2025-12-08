@@ -11,8 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../Context/AuthProvider";
 
 export default function TabOneScreen() {
-  const { user,token } = useAuth();
-  console.log(token)
+  const { user, token } = useAuth();
+  console.log(token);
   const workshops = [
     {
       id: 1,
@@ -164,9 +164,10 @@ export default function TabOneScreen() {
                 <Image
                   source={require("@/assets/images/key.png")}
                   style={{
-                    width: wp("9%"), // 36px
-                    height: wp("9%"), // 36px
+                    width: wp("11%"), // 36px
+                    height: wp("11%"), // 36px
                   }}
+                  
                 />
               </View>
               <View>

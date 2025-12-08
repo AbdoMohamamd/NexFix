@@ -208,8 +208,8 @@ const Book = () => {
                 <Image
                   source={require("@/assets/images/key.png")}
                   style={{
-                    width: wp("9%"), // Responsive (was 36)
-                    height: wp("9%"), // Responsive (was 36)
+                    width: wp("13%"), // Responsive (was 36)
+                    height: wp("13%"), // Responsive (was 36)
                   }}
                 />
               </View>
