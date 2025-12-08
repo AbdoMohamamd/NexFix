@@ -106,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Navigate to login
       router.replace("/Authentication/Welcome");
     } catch (error) {
-      console.log("Logout error:", error);
     } finally {
       setIsLoading(false);
     }

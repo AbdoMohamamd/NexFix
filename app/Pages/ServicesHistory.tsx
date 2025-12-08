@@ -19,7 +19,6 @@ import {
 } from "react-native-responsive-screen";
 
 const ServicesHistory = () => {
-  // Sample service history data
   const servicesHistory = [
     {
       id: 1,
@@ -68,9 +67,9 @@ const ServicesHistory = () => {
       <Header title="Services History" goBack={true} />
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: wp("4%"), // 16px
-          paddingVertical: hp("2%"), // 16px
-          gap: hp("1.5%"), // 12px
+          paddingHorizontal: wp("4%"),
+          paddingVertical: hp("2%"),
+          gap: hp("1.5%"),
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -79,32 +78,28 @@ const ServicesHistory = () => {
             key={service.id}
             style={{
               backgroundColor: "#ffffff",
-              borderWidth: wp("0.25%"), // 1px
+              borderWidth: wp("0.25%"),
               borderColor: "#E5E7EB",
-              borderRadius: wp("2.5%"), // 10px
+              borderRadius: wp("2.5%"),
               overflow: "hidden",
-              padding: wp("3%"), // 12px
+              padding: wp("3%"),
             }}
           >
-            {/* Service Card Content */}
             <Pressable
               style={{
                 flexDirection: "row",
-                gap: wp("3%"), // 12px
+                gap: wp("3%"),
                 justifyContent: "space-between",
               }}
-              onPress={() => {
-                // Navigate to service details
-              }}
+              onPress={() => {}}
             >
-              {/* Left side with image */}
               <View
                 style={{
-                  padding: wp("3%"), // 12px
+                  padding: wp("3%"),
                   backgroundColor: "#F3F4F6",
-                  borderRadius: wp("2.5%"), // 10px
-                  width: wp("15%"), // 60px
-                  height: wp("15%"), // 60px
+                  borderRadius: wp("2.5%"),
+                  width: wp("15%"),
+                  height: wp("15%"),
                   justifyContent: "center",
                   alignItems: "center",
                 }}
@@ -112,19 +107,18 @@ const ServicesHistory = () => {
                 <Image
                   source={require("@/assets/images/key.png")}
                   style={{
-                    width: wp("9%"), // 36px
-                    height: wp("9%"), // 36px
+                    width: wp("9%"),
+                    height: wp("9%"),
                   }}
                 />
               </View>
 
-              {/* Middle section with service info */}
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
                     fontFamily: "Arimo-Bold",
-                    fontSize: wp("4%"), // 16px
-                    marginBottom: hp("0.5%"), // 4px
+                    fontSize: wp("4%"),
+                    marginBottom: hp("0.5%"),
                   }}
                 >
                   {service.serviceType}
@@ -132,9 +126,9 @@ const ServicesHistory = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"), // 14px
+                    fontSize: wp("3.5%"),
                     color: "#6A7282",
-                    marginBottom: hp("0.5%"), // 4px
+                    marginBottom: hp("0.5%"),
                   }}
                 >
                   {service.workshop}
@@ -143,14 +137,14 @@ const ServicesHistory = () => {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: wp("2%"), // 8px
-                    marginBottom: hp("0.5%"), // 4px
+                    gap: wp("2%"),
+                    marginBottom: hp("0.5%"),
                   }}
                 >
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: wp("3%"), // 12px
+                      fontSize: wp("3%"),
                       color: "#6A7282",
                     }}
                   >
@@ -159,15 +153,15 @@ const ServicesHistory = () => {
                   <View
                     style={{
                       backgroundColor: "#D1FAE5",
-                      paddingHorizontal: wp("2%"), // 8px
-                      paddingVertical: hp("0.25%"), // 2px
-                      borderRadius: wp("1%"), // 4px
+                      paddingHorizontal: wp("2%"),
+                      paddingVertical: hp("0.25%"),
+                      borderRadius: wp("1%"),
                     }}
                   >
                     <Text
                       style={{
                         fontFamily: "Arimo-Medium",
-                        fontSize: wp("2.5%"), // 10px
+                        fontSize: wp("2.5%"),
                         color: "#065F46",
                       }}
                     >
@@ -177,7 +171,6 @@ const ServicesHistory = () => {
                 </View>
               </View>
 
-              {/* Right side with price - Changed to yellow */}
               <View
                 style={{
                   alignItems: "flex-end",
@@ -186,7 +179,7 @@ const ServicesHistory = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Bold",
-                    fontSize: wp("4.5%"), // 18px
+                    fontSize: wp("4.5%"),
                     color: "#F1C02C",
                   }}
                 >
@@ -195,40 +188,35 @@ const ServicesHistory = () => {
               </View>
             </Pressable>
 
-            {/* Yellow Separator Line */}
             <View
               style={{
-                height: wp("0.25%"), // 1px
+                height: wp("0.25%"),
                 backgroundColor: "#F1C02C",
-                marginVertical: hp("1.5%"), // 12px
+                marginVertical: hp("1.5%"),
               }}
             />
 
-            {/* Invoice and Photos Section - Horizontal */}
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: wp("5%"), // 20px
-                marginBottom: hp("1.5%"), // 12px
+                gap: wp("5%"),
+                marginBottom: hp("1.5%"),
               }}
             >
-              {/* Invoice */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   gap: wp("1.5%"),
-                }} // 6px
-                onPress={() => {
-                  // View invoice action
                 }}
+                onPress={() => {}}
               >
-                <SvgInvoice width={wp("5%")} height={wp("5%")} /> {/* 20px */}
+                <SvgInvoice width={wp("5%")} height={wp("5%")} />
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("3%"), // 12px
+                    fontSize: wp("3%"),
                     color: "#6A7282",
                   }}
                 >
@@ -236,22 +224,19 @@ const ServicesHistory = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Photos */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   gap: wp("1.5%"),
-                }} // 6px
-                onPress={() => {
-                  // View photos action
                 }}
+                onPress={() => {}}
               >
-                <SvgPhoto width={wp("5%")} height={wp("5%")} /> {/* 20px */}
+                <SvgPhoto width={wp("5%")} height={wp("5%")} />
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("3%"), // 12px
+                    fontSize: wp("3%"),
                     color: "#6A7282",
                   }}
                 >
@@ -260,10 +245,7 @@ const ServicesHistory = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Buttons Section - Stacked vertically under Invoice/Photos */}
             <View style={{ gap: hp("1%") }}>
-              {/* 8px */}
-              {/* Rate Button */}
               <Button
                 onPress={() => {}}
                 text="Book again"

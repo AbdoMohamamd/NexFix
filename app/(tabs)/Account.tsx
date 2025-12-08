@@ -81,7 +81,6 @@ const Account = () => {
             }}
             onPress={() => {
               logout();
-              router.navigate("/Authentication/Welcome");
             }}
           >
             <SvgLogout width={wp("4.5%")} height={wp("4.5%")} />
