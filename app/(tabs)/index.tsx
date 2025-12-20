@@ -12,7 +12,7 @@ import { useAuth } from "../Context/AuthProvider";
 
 export default function TabOneScreen() {
   const { user, token } = useAuth();
-  console.log(token);
+  console.log(token,user);
   const workshops = [
     {
       id: 1,

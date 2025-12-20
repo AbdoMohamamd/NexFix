@@ -14,6 +14,13 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (userData: {
+    accUserName: string;
+    accountEmail: string;
+    accountPhoneNumber: string;
+    accPassword: string;
+    Role?: number;
+  }) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -92,6 +99,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const register = async (userData: {
+    accUserName: string;
+    accountEmail: string;
+    accountPhoneNumber: string;
+    accPassword: string;
+    Role?: number;
+  }) => {
+    try {
+      setIsLoading(true);
+
+      // Set default role to 3 (Customer) if not provided
+      const dataToSend = {
+        ...userData,
+        Role: userData.Role || 3,
+      };
+console.log(dataToSend)
+      const response = await authAPI.register(dataToSend);
+
+      if (response.data.success) {
+        const { token, ...userData } = response.data.data;
+
+        // Store auth data
+        await storeAuthData(token, userData);
+
+        // Update state
+        setUser(userData as UserData);
+        setToken(token);
+
+        // Navigate to main app
+        router.replace("/(tabs)");
+      } else {
+        throw new Error(response.data.message || "Registration failed");
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      throw (
+        error.response?.data?.message || error.message || "Registration failed"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       setIsLoading(true);
@@ -106,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Navigate to login
       router.replace("/Authentication/Welcome");
     } catch (error) {
+      console.error("Logout error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -116,10 +167,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     token,
     isLoading,
     login,
+    register,
     logout,
     isAuthenticated: !!user && !!token,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
 export default AuthProvider;

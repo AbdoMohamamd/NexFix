@@ -88,6 +88,10 @@ function RootLayoutNav() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Pages/EditAccountInfo"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="Pages/RateService"
         options={{
           title: "Rate This Service",

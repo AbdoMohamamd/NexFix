@@ -2,8 +2,7 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 // Base URL for your API
-const API_BASE_URL =
-  "http://siblani-001-site6.atempurl.com/api/nexfix_api/";
+const API_BASE_URL = "http://siblani-001-site6.atempurl.com/api/nexfix_api/";
 
 // Create axios instance
 const api = axios.create({
@@ -62,6 +61,18 @@ export const clearAuthData = async () => {
   }
 };
 
+// Update stored user data
+export const updateUserData = async (newUserData: any) => {
+  try {
+    const currentUserData = await getUserData();
+    const updatedUserData = { ...currentUserData, ...newUserData };
+    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updatedUserData));
+    return updatedUserData;
+  } catch (error) {
+    console.error("Error updating user data:", error);
+  }
+};
+
 // Initialize auth token if exists
 export const initializeAuth = async () => {
   const token = await getToken();
@@ -76,9 +87,26 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post("login.php", { email, password }),
 
+  register: (userData: {
+    accUserName: string;
+    accountEmail: string;
+    accountPhoneNumber: string;
+    accPassword: string;
+    Role: number;
+  }) => api.post("account_new.php", userData),
+
+  // Update account information
+  updateAccount: (accountData: {
+    accID: number;
+    accPassword?: string;
+    accountEmail: string;
+    accountPhoneNumber: string;
+  }) => api.post("account_update.php", accountData),
+
+  // Get account details
+
   // Add other API endpoints as needed
   // logout: () => api.post('logout.php'),
-  // getUserProfile: () => api.get('profile.php'),
 };
 
 export default api;

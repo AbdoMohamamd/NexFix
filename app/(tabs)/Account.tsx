@@ -153,7 +153,11 @@ const Account = () => {
             </View>
 
             {/* Edit Button */}
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                router.navigate("/Pages/EditAccountInfo");
+              }}
+            >
               <Text
                 style={{
                   fontSize: wp("3.5%"), // Responsive (was 14)
