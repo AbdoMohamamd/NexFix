@@ -93,7 +93,6 @@ export default function TabOneScreen() {
 
       // 2. Get unique mechanic IDs from appointments
       const mechanicIds = getUniqueMechanicIdsFromAppointments(appointments);
-console.log(mechanicIds)
       if (mechanicIds.length === 0) {
         setWorkshops([]);
         return;
@@ -149,7 +148,6 @@ console.log(mechanicIds)
           return null;
         }
       });
-console.log(workshopPromises)
       // 4. Wait for all workshop requests to complete
       const workshopResults = await Promise.all(workshopPromises);
       const validWorkshops = workshopResults.filter(

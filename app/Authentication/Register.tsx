@@ -167,7 +167,6 @@ const Register = () => {
         fuelTypeId: vehicle.fuelType?.id,
         plateNumber: vehicle.plateNumber || "",
       }));
-      console.log(vehicleData);
       // Validate vehicle data
       for (const vehicle of vehicleData) {
         if (!vehicle.brandId) {

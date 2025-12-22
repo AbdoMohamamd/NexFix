@@ -239,8 +239,6 @@ const RateService = () => {
           <Button
             onPress={() => {
               // Handle submit review
-              console.log("Rating:", rating);
-              console.log("Feedback:", feedback);
               // router.back() or show success message
             }}
             text="Submit Review"

@@ -8,7 +8,7 @@ export interface UserData {
   accUserName: string;
   Role: number;
   accountEmail: string;
-  accPhoneNumber: string;
+  accountPhoneNumber: string;
   roleName: string;
   accPhotoPath: string;
   workshop_ID: number;

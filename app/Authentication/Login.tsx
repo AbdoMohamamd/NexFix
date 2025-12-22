@@ -63,7 +63,6 @@ const Login = () => {
 
   // Handle forgot password
   const handleForgotPassword = () => {
-    console.log("Forgot password for:", email);
     // Navigate to forgot password screen
     // router.navigate('/Authentication/ForgotPassword');
   };

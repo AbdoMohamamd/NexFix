@@ -64,7 +64,7 @@ export interface DropDownProps {
   state?: DropDownState;
   options: DropDownOption[];
   card?: boolean;
-  style:ViewStyle
+  style?:ViewStyle
 }
 
 export interface HeaderProps {

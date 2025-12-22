@@ -206,20 +206,36 @@ export const vehicleAPI = {
   // Get user's vehicles
   getVehiclesByCustomerId: (vehicule_CustomerID: number) =>
     api.get(
-      `vehicule/vehicule_select.php?vehicule_CustomerID=${vehicule_CustomerID}`
+      `/vehicule/vehicule_details.php?customer_id=${vehicule_CustomerID}`
     ),
 
   // Update vehicle
   updateVehicle: (vehicleData: {
     vehicule_ID: number;
     vehicule_PlateNb?: string;
-    vehicule_BrandID: number;
-    vehicule_ColorID: number;
-    vehicule_FactoryYear: number;
+    vehicule_ColorID: string;
     vehicule_Model: string;
     vehicule_Notes?: string;
     vehicule_Milleage: number;
-    vehicule_FuelTypeID: number;
   }) => api.post("vehicule/vehicule_update.php", vehicleData),
+  getVehicleBrandById: (brand_ID: number) =>
+    api.get(`vehicule/vehicule_brand_select.php?brand_ID=${brand_ID}`),
+
+  // Get single color by ID
+  getVehicleColorById: (color_ID: number) =>
+    api.get(`vehicule/vehicule_color_select.php?color_ID=${color_ID}`),
+
+  // Get single fuel type by ID
+  getVehicleFuelTypeById: (fuelType_ID: number) =>
+    api.get(`vehicule/vehicule_fueltype_select.php?fuelType_ID=${fuelType_ID}`),
+
+  // Delete vehicle
+  deleteVehicle: (vehicule_ID: number) =>
+    api.delete(`vehicule/vehicule_delete.php`, {
+      data: { vehicule_ID },
+    }),
+};
+export const serviceAPI = {
+  getAll: () => api.get("service/part_select.php"),
 };
 export default api;

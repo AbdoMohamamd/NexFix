@@ -77,7 +77,6 @@ const Welcome = () => {
         />
         <Button
           onPress={() => {
-            console.log("make phone call to number");
           }}
           text="Call Us"
           wrap={false}

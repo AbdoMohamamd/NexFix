@@ -36,7 +36,7 @@ const EditAccountInfo = () => {
   useEffect(() => {
     if (user) {
       setEmail(user.accountEmail || "");
-      setPhoneNumber(user.accPhoneNumber || user.accPhoneNumber || "");
+      setPhoneNumber(user.accountPhoneNumber || user.accountPhoneNumber || "");
     }
     setIsLoadingData(false);
   }, [user]);
@@ -95,10 +95,8 @@ const EditAccountInfo = () => {
         updateData.accPassword = password;
       }
 
-      console.log("Updating account with:", updateData);
 
       const response = await authAPI.updateAccount(updateData);
-      console.log("Update response:", response.data);
 
       if (response.data.success) {
         // Update local user data

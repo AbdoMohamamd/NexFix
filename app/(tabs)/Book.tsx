@@ -4,7 +4,6 @@ import SvgSearch from "@/assets/Icons/Search";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
 import { appointmentsAPI, workshopsAPI } from "@/assets/utils/Api/api";
 import Button from "@/components/Button";
-import Header from "@/components/Header";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -161,9 +160,7 @@ const Book = () => {
         appointment_Time: appointmentDateTime,
         appointment_Status: 0, // Default to pending
       };
-      console.log(appointmentData);
       const response = await appointmentsAPI.createAppointment(appointmentData);
-      console.log(response);
 
       const data = response.data;
       if (data.success) {
@@ -245,7 +242,6 @@ const Book = () => {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-        <Header title="Book Service" goBack={true} />
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -260,8 +256,6 @@ const Book = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-      <Header title="Book Service" goBack={true} />
-
       {/* White Header Section */}
       <View
         style={{

@@ -2,13 +2,13 @@ import SvgClock from "@/assets/Icons/Clock";
 import SvgLocation from "@/assets/Icons/Location";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
 import Header from "@/components/Header";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import { useLocalSearchParams } from "expo-router";
 
 const ServiceDetails = () => {
   const params = useLocalSearchParams();
@@ -245,9 +245,7 @@ const ServiceDetails = () => {
                 borderWidth: wp("0.25%"), // 1px
                 borderColor: "#E5E7EB",
               }}
-              onPress={() =>
-                console.log(`Pressed appointment ${appointment.appointment_ID}`)
-              }
+              onPress={() => {}}
             >
               <View
                 style={{
