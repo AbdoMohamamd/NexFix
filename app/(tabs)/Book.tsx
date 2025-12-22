@@ -1,25 +1,70 @@
+import { useAuth } from "@/app/Context/AuthProvider";
 import SvgLocation from "@/assets/Icons/Location";
 import SvgSearch from "@/assets/Icons/Search";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
+import { appointmentsAPI, workshopsAPI } from "@/assets/utils/Api/api";
 import Button from "@/components/Button";
-import React, { useState } from "react";
+import Header from "@/components/Header";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
+  Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// Define Workshop interface based on your API response
+interface Workshop {
+  workshop_ID: number;
+  workshop_MechanicID: number;
+  workshop_Name: string;
+  workshop_Location: string;
+  workshop_Phone?: string;
+  workshop_Email?: string;
+  workshop_Description?: string;
+  workshop_Rating?: number;
+  workshop_ReviewCount?: number;
+  workshop_Distance?: number;
+  workshop_Image?: string;
+  workshop_IsAvailable?: boolean;
+}
 
 const Book = () => {
+  const { user } = useAuth();
   const [selectedService, setSelectedService] = useState("All Services");
   const [searchText, setSearchText] = useState("");
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Booking modal state
+  const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(
+    null
+  );
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
+  // Booking form state
+  const [appointmentTitle, setAppointmentTitle] = useState("");
+  const [appointmentDescription, setAppointmentDescription] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState(new Date());
+  const [appointmentTime, setAppointmentTime] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [vehicleId, setVehicleId] = useState("6"); // Default vehicle ID
 
   const services = [
     "All Services",
@@ -32,51 +77,199 @@ const Book = () => {
     "Transmission",
   ];
 
-  const mechanics = [
-    {
-      id: 1,
-      name: "Quick Fix Auto",
-      rating: "4.8 (120)",
-      distance: "2.5 km",
-      price: "$54",
-      isAvailable: true,
-    },
-    {
-      id: 2,
-      name: "Precision Auto Care",
-      rating: "4.9 (95)",
-      distance: "3.2 km",
-      price: "$68",
-      isAvailable: true,
-    },
-    {
-      id: 3,
-      name: "City Mechanics",
-      rating: "4.7 (210)",
-      distance: "5.1 km",
-      price: "$45",
-      isAvailable: false,
-    },
-    {
-      id: 4,
-      name: "Express Repair Hub",
-      rating: "4.6 (87)",
-      distance: "1.8 km",
-      price: "$72",
-      isAvailable: true,
-    },
-  ];
+  // Fetch all workshops
+  const fetchWorkshops = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await workshopsAPI.getAll();
+      const data = response.data;
+
+      if (data.success) {
+        // Assuming API returns data.workshops or data.data
+        const workshopsData =
+          data.data?.workshops || data.workshops || data.data || [];
+        setWorkshops(Array.isArray(workshopsData) ? workshopsData : []);
+      } else {
+        setError(data.message || "Failed to fetch workshops");
+      }
+    } catch (err) {
+      console.error("Error fetching workshops:", err);
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchWorkshops();
+  };
+
+  useEffect(() => {
+    fetchWorkshops();
+  }, []);
+
+  // Handle workshop selection for booking
+  const handleBookNow = (workshop: Workshop) => {
+    setSelectedWorkshop(workshop);
+    setAppointmentTitle(""); // Reset form
+    setAppointmentDescription("");
+    setAppointmentDate(new Date());
+    setAppointmentTime(new Date());
+    setVehicleId("6"); // Reset to default vehicle ID
+    setShowBookingModal(true);
+  };
+
+  // Handle booking submission
+  const handleSubmitBooking = async () => {
+    if (!selectedWorkshop || !user) {
+      Alert.alert(
+        "Error",
+        "Please select a workshop and ensure you're logged in"
+      );
+      return;
+    }
+
+    if (!appointmentTitle.trim()) {
+      Alert.alert("Error", "Please enter a service title");
+      return;
+    }
+
+    if (!appointmentDescription.trim()) {
+      Alert.alert("Error", "Please enter service description");
+      return;
+    }
+
+    try {
+      setBookingLoading(true);
+
+      // Format date and time
+      const formattedDate = appointmentDate.toISOString().split("T")[0];
+      const formattedTime = appointmentTime.toTimeString().split(" ")[0];
+      const appointmentDateTime = `${formattedDate} ${formattedTime}`;
+
+      const appointmentData = {
+        account_CustomerID: user.accID,
+        account_MechanicID: selectedWorkshop.workshop_MechanicID,
+        appointment_VehiculeID: parseInt(vehicleId) || 6, // Use provided vehicle ID or default
+        appointment_Title: appointmentTitle,
+        appointment_Description: appointmentDescription,
+        appointment_Date: formattedDate,
+        appointment_Time: appointmentDateTime,
+        appointment_Status: 0, // Default to pending
+      };
+      console.log(appointmentData);
+      const response = await appointmentsAPI.createAppointment(appointmentData);
+      console.log(response);
+
+      const data = response.data;
+      if (data.success) {
+        Alert.alert("Success", "Appointment booked successfully!", [
+          {
+            text: "OK",
+            onPress: () => {
+              setShowBookingModal(false);
+              router.navigate("/"); // Navigate to dashboard
+            },
+          },
+        ]);
+      } else {
+        Alert.alert("Error", data || "Failed to book appointment");
+      }
+    } catch (err) {
+      console.error("Error booking appointment:", err);
+      Alert.alert("Error", "Network error. Please try again.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // Filter workshops based on search and service
+  const filteredWorkshops = workshops.filter((workshop) => {
+    const matchesSearch =
+      searchText === "" ||
+      workshop.workshop_Name.toLowerCase().includes(searchText.toLowerCase()) ||
+      workshop.workshop_Location
+        .toLowerCase()
+        .includes(searchText.toLowerCase());
+
+    const matchesService =
+      selectedService === "All Services" ||
+      workshop.workshop_Description
+        ?.toLowerCase()
+        .includes(selectedService.toLowerCase()) ||
+      workshop.workshop_Name
+        .toLowerCase()
+        .includes(selectedService.toLowerCase());
+
+    return matchesSearch && matchesService;
+  });
+
+  // Format distance
+  const formatDistance = (distance?: number) => {
+    if (!distance) return "N/A";
+    return `${distance.toFixed(1)} km`;
+  };
+
+  // Format rating
+  const formatRating = (rating?: number, count?: number) => {
+    if (!rating) return "No ratings";
+    return `${rating.toFixed(1)} (${count || 0})`;
+  };
+
+  // Get default price based on service
+  const getDefaultPrice = (serviceType: string) => {
+    switch (serviceType) {
+      case "Oil Change":
+        return "$54";
+      case "Tires":
+        return "$120";
+      case "Brakes":
+        return "$85";
+      case "Engine":
+        return "$150";
+      case "AC Repair":
+        return "$75";
+      case "Battery":
+        return "$65";
+      case "Transmission":
+        return "$200";
+      default:
+        return "$50";
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+        <Header title="Book Service" goBack={true} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color="#EFBF2B" />
+          <Text style={{ marginTop: 10, fontFamily: "Arimo-Regular" }}>
+            Loading workshops...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+      <Header title="Book Service" goBack={true} />
+
       {/* White Header Section */}
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingHorizontal: wp("4%"), // Responsive (was 16)
-          paddingTop: hp("1.5%"), // Responsive (was 12)
-          paddingBottom: hp("2%"), // Responsive (was 16)
-          borderBottomWidth: wp("0.25%"), // Responsive (was 1)
+          paddingHorizontal: wp("4%"),
+          paddingTop: hp("1.5%"),
+          paddingBottom: hp("2%"),
+          borderBottomWidth: wp("0.25%"),
           borderBottomColor: "#E5E7EB",
         }}
       >
@@ -86,28 +279,24 @@ const Book = () => {
             flexDirection: "row",
             alignItems: "center",
             backgroundColor: "#ffffff",
-            borderWidth: wp("0.25%"), // Responsive (was 1)
+            borderWidth: wp("0.25%"),
             borderColor: "#E5E7EB",
-            borderRadius: wp("25%"), // Half of height for pill shape
-            paddingHorizontal: wp("4%"), // Responsive (was 16)
-            height: hp("6%"), // Responsive (was 48)
-            marginBottom: hp("2%"), // Responsive (was 16)
+            borderRadius: wp("25%"),
+            paddingHorizontal: wp("4%"),
+            height: hp("6%"),
+            marginBottom: hp("2%"),
           }}
         >
-          <SvgSearch
-            width={wp("5%")} // Responsive (was 20)
-            height={wp("5%")} // Responsive (was 20)
-            color="#9CA3AF"
-          />
+          <SvgSearch width={wp("5%")} height={wp("5%")} color="#9CA3AF" />
           <TextInput
             style={{
               flex: 1,
-              paddingVertical: hp("1.5%"), // Responsive (was 12)
-              paddingHorizontal: wp("3%"), // Responsive (was 12)
-              fontSize: wp("4%"), // Responsive (was 16)
+              paddingVertical: hp("1.5%"),
+              paddingHorizontal: wp("3%"),
+              fontSize: wp("4%"),
               fontFamily: "Arimo-Regular",
             }}
-            placeholder="Search services or mechanics"
+            placeholder="Search workshops or services"
             placeholderTextColor="#9CA3AF"
             value={searchText}
             onChangeText={setSearchText}
@@ -118,20 +307,19 @@ const Book = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: hp("2%") }} // Responsive (was 16)
+          style={{ marginBottom: hp("2%") }}
         >
           <View style={{ flexDirection: "row", gap: wp("2%") }}>
-            {/* Responsive (was 8) */}
             {services.map((service) => (
               <Pressable
                 key={service}
                 style={{
-                  paddingHorizontal: wp("4%"), // Responsive (was 16)
-                  paddingVertical: hp("1%"), // Responsive (was 8)
+                  paddingHorizontal: wp("4%"),
+                  paddingVertical: hp("1%"),
                   backgroundColor:
                     selectedService === service ? "#EFBF2B" : "#ffffff",
-                  borderRadius: wp("25%"), // Pill shape
-                  borderWidth: wp("0.25%"), // Responsive (was 1)
+                  borderRadius: wp("25%"),
+                  borderWidth: wp("0.25%"),
                   borderColor:
                     selectedService === service ? "#EFBF2B" : "#E5E7EB",
                 }}
@@ -140,7 +328,7 @@ const Book = () => {
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"), // Responsive (was 14)
+                    fontSize: wp("3.5%"),
                     color: selectedService === service ? "#000000" : "#374151",
                   }}
                 >
@@ -151,7 +339,7 @@ const Book = () => {
           </View>
         </ScrollView>
 
-        {/* Mechanics Count */}
+        {/* Workshops Count */}
         <View
           style={{
             flexDirection: "row",
@@ -162,187 +350,566 @@ const Book = () => {
           <Text
             style={{
               fontFamily: "Arimo-Medium",
-              fontSize: wp("4%"), // Responsive (was 16)
+              fontSize: wp("4%"),
             }}
           >
-            {mechanics.length} Mechanics Available
+            {filteredWorkshops.length} Workshop
+            {filteredWorkshops.length !== 1 ? "s" : ""} Available
           </Text>
+
+          {error ? (
+            <Text
+              style={{
+                color: "#EF4444",
+                fontFamily: "Arimo-Regular",
+                fontSize: wp("3%"),
+              }}
+            >
+              {error}
+            </Text>
+          ) : null}
         </View>
       </View>
 
-      {/* Mechanics List */}
+      {/* Workshops List */}
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: wp("4%"), // Responsive (was 16)
-          paddingVertical: hp("2%"), // Responsive (was 16)
-          gap: hp("1.5%"), // Responsive (was 12)
+          paddingHorizontal: wp("4%"),
+          paddingVertical: hp("2%"),
+          gap: hp("1.5%"),
+          paddingBottom: hp("10%"),
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#EFBF2B"]}
+            tintColor="#EFBF2B"
+          />
+        }
       >
-        {/* Mechanic Cards */}
-        {mechanics.map((mechanic) => (
+        {filteredWorkshops.length === 0 ? (
           <View
-            key={mechanic.id}
             style={{
-              padding: wp("4%"), // Responsive (was 16)
+              padding: wp("6%"),
               backgroundColor: "#ffffff",
-              borderRadius: wp("2.5%"), // Responsive (was 10)
-              borderWidth: wp("0.25%"), // Responsive (was 1)
+              borderRadius: wp("2.5%"),
+              borderWidth: wp("0.25%"),
               borderColor: "#E5E7EB",
+              alignItems: "center",
             }}
           >
-            <View
+            <Text
               style={{
-                flexDirection: "row",
-                gap: wp("3%"), // Responsive (was 12)
-                marginBottom: hp("1.5%"), // Responsive (was 12)
+                fontFamily: "Arimo-Regular",
+                fontSize: wp("4%"),
+                color: "#6A7282",
+                textAlign: "center",
+              }}
+            >
+              No workshops found. {searchText ? "Try a different search." : ""}
+            </Text>
+          </View>
+        ) : (
+          filteredWorkshops.map((workshop) => (
+            <View
+              key={workshop.workshop_ID}
+              style={{
+                padding: wp("4%"),
+                backgroundColor: "#ffffff",
+                borderRadius: wp("2.5%"),
+                borderWidth: wp("0.25%"),
+                borderColor: "#E5E7EB",
               }}
             >
               <View
                 style={{
-                  padding: wp("3%"), // Responsive (was 12)
-                  backgroundColor: "#F3F4F6",
-                  borderRadius: wp("2.5%"), // Responsive (was 10)
+                  flexDirection: "row",
+                  gap: wp("3%"),
+                  marginBottom: hp("1.5%"),
                 }}
               >
-                <Image
-                  source={require("@/assets/images/key.png")}
-                  style={{
-                    width: wp("13%"), // Responsive (was 36)
-                    height: wp("13%"), // Responsive (was 36)
-                  }}
-                />
-              </View>
-
-              <View style={{ flex: 1 }}>
                 <View
                   style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: hp("0.5%"), // Responsive (was 4)
+                    padding: wp("3%"),
+                    backgroundColor: "#F3F4F6",
+                    borderRadius: wp("2.5%"),
                   }}
                 >
-                  <View style={{ flex: 1 }}>
+                  <Image
+                    source={
+                      workshop.workshop_Image
+                        ? { uri: workshop.workshop_Image }
+                        : require("@/assets/images/key.png")
+                    }
+                    style={{
+                      width: wp("13%"),
+                      height: wp("13%"),
+                      borderRadius: wp("1%"),
+                    }}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: hp("0.5%"),
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontFamily: "Arimo-Medium",
+                          fontSize: wp("4%"),
+                        }}
+                      >
+                        {workshop.workshop_Name}
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: hp("0.25%"),
+                        }}
+                      >
+                        <SvgStarIcon
+                          width={wp("4%")}
+                          height={wp("4%")}
+                          color="#F59E0B"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "Arimo-Medium",
+                            fontSize: wp("3.5%"),
+                            color: "#111827",
+                            marginLeft: wp("1%"),
+                          }}
+                        >
+                          {formatRating(
+                            workshop.workshop_Rating,
+                            workshop.workshop_ReviewCount
+                          )}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={{ alignItems: "flex-end" }}>
+                      <Text
+                        style={{
+                          fontFamily: "Arimo-Bold",
+                          fontSize: wp("4.5%"),
+                          color: "#EFBF2B",
+                        }}
+                      >
+                        {getDefaultPrice(selectedService)}
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: hp("0.25%"),
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: wp("1.5%"),
+                            height: wp("1.5%"),
+                            borderRadius: wp("0.75%"),
+                            backgroundColor:
+                              workshop.workshop_IsAvailable !== false
+                                ? "#10B981"
+                                : "#EF4444",
+                            marginRight: wp("1%"),
+                          }}
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "Arimo-Medium",
+                            fontSize: wp("3.5%"),
+                            color:
+                              workshop.workshop_IsAvailable !== false
+                                ? "#10B981"
+                                : "#EF4444",
+                          }}
+                        >
+                          {workshop.workshop_IsAvailable !== false
+                            ? "Available"
+                            : "Not available"}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginTop: hp("0.5%"),
+                    }}
+                  >
+                    <SvgLocation
+                      width={wp("3.5%")}
+                      height={wp("3.5%")}
+                      color="#6A7282"
+                    />
                     <Text
                       style={{
                         fontFamily: "Arimo-Medium",
-                        fontSize: wp("4%"), // Responsive (was 16)
+                        fontSize: wp("3.5%"),
+                        color: "#111827",
+                        marginLeft: wp("2%"),
+                        flex: 1,
                       }}
+                      numberOfLines={1}
                     >
-                      {mechanic.name}
+                      {workshop.workshop_Location}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: hp("0.25%"), // Responsive (was 2)
-                      }}
-                    >
-                      <SvgStarIcon
-                        width={wp("4%")} // Responsive (was 16)
-                        height={wp("4%")} // Responsive (was 16)
-                        color="#F59E0B"
-                      />
+                    {workshop.workshop_Distance !== undefined && (
                       <Text
                         style={{
                           fontFamily: "Arimo-Medium",
-                          fontSize: wp("3.5%"), // Responsive (was 14)
-                          color: "#111827",
-                          marginLeft: wp("1%"), // Responsive (was 4)
+                          fontSize: wp("3%"),
+                          color: "#6A7282",
+                          marginLeft: wp("2%"),
                         }}
                       >
-                        {mechanic.rating}
+                        {formatDistance(workshop.workshop_Distance)}
                       </Text>
-                    </View>
-                  </View>
-
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text
-                      style={{
-                        fontFamily: "Arimo-Bold",
-                        fontSize: wp("4.5%"), // Responsive (was 18)
-                        color: "#EFBF2B",
-                      }}
-                    >
-                      {mechanic.price}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: hp("0.25%"), // Responsive (was 2)
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: wp("1.5%"), // Responsive (was 6)
-                          height: wp("1.5%"), // Responsive (was 6)
-                          borderRadius: wp("0.75%"), // Half of width
-                          backgroundColor: mechanic.isAvailable
-                            ? "#10B981"
-                            : "#EF4444",
-                          marginRight: wp("1%"), // Responsive (was 4)
-                        }}
-                      />
-                      <Text
-                        style={{
-                          fontFamily: "Arimo-Medium",
-                          fontSize: wp("3.5%"), // Responsive (was 14)
-                          color: mechanic.isAvailable ? "#10B981" : "#EF4444",
-                        }}
-                      >
-                        {mechanic.isAvailable ? "Available" : "Not available"}
-                      </Text>
-                    </View>
+                    )}
                   </View>
                 </View>
+              </View>
 
-                <View
+              {/* Workshop Description (if available) */}
+              {workshop.workshop_Description && (
+                <Text
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginTop: hp("0.5%"), // Responsive (was 4)
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("3.5%"),
+                    color: "#6A7282",
+                    marginBottom: hp("1.5%"),
+                    lineHeight: hp("2.5%"),
                   }}
+                  numberOfLines={2}
                 >
-                  <SvgLocation
-                    width={wp("3.5%")} // Responsive (was 14)
-                    height={wp("3.5%")} // Responsive (was 14)
-                    color="#6A7282"
-                  />
+                  {workshop.workshop_Description}
+                </Text>
+              )}
 
+              {/* Separator Line */}
+              <View
+                style={{
+                  height: wp("0.25%"),
+                  backgroundColor: "#E5E7EB",
+                  marginVertical: hp("1.5%"),
+                }}
+              />
+
+              {/* Action Button */}
+              <Button
+                onPress={() => handleBookNow(workshop)}
+                text="Book Now"
+                wrap={false}
+                disabled={workshop.workshop_IsAvailable === false}
+              />
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      {/* Booking Modal */}
+      <Modal
+        visible={showBookingModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowBookingModal(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "flex-end",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderTopLeftRadius: wp("5%"),
+              borderTopRightRadius: wp("5%"),
+              padding: wp("4%"),
+              maxHeight: hp("80%"),
+            }}
+          >
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: hp("2%"),
+                }}
+              >
+                <Text
+                  style={{ fontFamily: "Arimo-Bold", fontSize: wp("4.5%") }}
+                >
+                  Book Appointment
+                </Text>
+                <Pressable onPress={() => setShowBookingModal(false)}>
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: wp("3.5%"), // Responsive (was 14)
-                      color: "#111827",
-                      marginLeft: wp("2%"), // Responsive (was 8)
+                      fontSize: wp("4%"),
+                      color: "#EF4444",
                     }}
                   >
-                    {mechanic.distance}
+                    Cancel
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Workshop Info */}
+              {selectedWorkshop && (
+                <View
+                  style={{
+                    backgroundColor: "#F8FAFC",
+                    padding: wp("3%"),
+                    borderRadius: wp("2%"),
+                    marginBottom: hp("2%"),
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Bold",
+                      fontSize: wp("4%"),
+                      marginBottom: hp("0.5%"),
+                    }}
+                  >
+                    {selectedWorkshop.workshop_Name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("3.5%"),
+                      color: "#6A7282",
+                    }}
+                  >
+                    {selectedWorkshop.workshop_Location}
                   </Text>
                 </View>
+              )}
+
+              {/* Booking Form */}
+              <Text
+                style={{
+                  fontFamily: "Arimo-Medium",
+                  fontSize: wp("4%"),
+                  marginBottom: hp("1%"),
+                }}
+              >
+                Service Details
+              </Text>
+
+              {/* Service Title */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Service Title*
+                </Text>
+                <TextInput
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("4%"),
+                    backgroundColor: "#FFFFFF",
+                  }}
+                  placeholder="e.g., Oil Change Service"
+                  value={appointmentTitle}
+                  onChangeText={setAppointmentTitle}
+                />
               </View>
-            </View>
 
-            {/* Separator Line */}
-            <View
-              style={{
-                height: wp("0.25%"), // Responsive (was 1)
-                backgroundColor: "#E5E7EB",
-                marginVertical: hp("1.5%"), // Responsive (was 12)
-              }}
-            />
+              {/* Service Description */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Service Description*
+                </Text>
+                <TextInput
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("4%"),
+                    backgroundColor: "#FFFFFF",
+                    minHeight: hp("10%"),
+                    textAlignVertical: "top",
+                  }}
+                  placeholder="Describe what service you need..."
+                  value={appointmentDescription}
+                  onChangeText={setAppointmentDescription}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
 
-            {/* Action Button */}
-            <Button
-              onPress={() => console.log("Book Now pressed")}
-              text="Book Now"
-              wrap={false}
-            />
+              {/* Vehicle ID */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Vehicle ID (Number)*
+                </Text>
+                <TextInput
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("4%"),
+                    backgroundColor: "#FFFFFF",
+                  }}
+                  placeholder="e.g., 6"
+                  value={vehicleId}
+                  onChangeText={setVehicleId}
+                  keyboardType="number-pad"
+                />
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("3%"),
+                    color: "#6A7282",
+                    marginTop: hp("0.5%"),
+                  }}
+                >
+                  Enter your vehicle ID number
+                </Text>
+              </View>
+
+              {/* Date Picker */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Appointment Date*
+                </Text>
+                <Pressable
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    backgroundColor: "#FFFFFF",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text
+                    style={{ fontFamily: "Arimo-Regular", fontSize: wp("4%") }}
+                  >
+                    {appointmentDate.toLocaleDateString()}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("3.5%"),
+                      color: "#EFBF2B",
+                    }}
+                  >
+                    Select Date
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Time Picker */}
+              <View style={{ marginBottom: hp("3%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Appointment Time*
+                </Text>
+                <Pressable
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    backgroundColor: "#FFFFFF",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                  onPress={() => setShowTimePicker(true)}
+                >
+                  <Text
+                    style={{ fontFamily: "Arimo-Regular", fontSize: wp("4%") }}
+                  >
+                    {appointmentTime.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("3.5%"),
+                      color: "#EFBF2B",
+                    }}
+                  >
+                    Select Time
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Submit Button */}
+              <Button
+                onPress={handleSubmitBooking}
+                text={bookingLoading ? "Booking..." : "Confirm Booking"}
+                wrap={false}
+                disabled={bookingLoading}
+              />
+            </ScrollView>
           </View>
-        ))}
-      </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

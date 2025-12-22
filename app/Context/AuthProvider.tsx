@@ -4,6 +4,7 @@ import {
   getUserData,
   initializeAuth,
   storeAuthData,
+  vehicleAPI,
 } from "@/assets/utils/Api/api";
 import { UserData } from "@/assets/utils/Types";
 import { router } from "expo-router";
@@ -20,6 +21,7 @@ interface AuthContextType {
     accountPhoneNumber: string;
     accPassword: string;
     Role?: number;
+    vehicles?: any[];
   }) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -105,27 +107,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     accountPhoneNumber: string;
     accPassword: string;
     Role?: number;
+    vehicles?: any[]; // Add vehicles parameter
   }) => {
     try {
       setIsLoading(true);
 
       // Set default role to 3 (Customer) if not provided
       const dataToSend = {
-        ...userData,
+        accUserName: userData.accUserName,
+        accountEmail: userData.accountEmail,
+        accountPhoneNumber: userData.accountPhoneNumber,
+        accPassword: userData.accPassword,
         Role: userData.Role || 3,
       };
-console.log(dataToSend)
+
       const response = await authAPI.register(dataToSend);
 
       if (response.data.success) {
-        const { token, ...userData } = response.data.data;
+        const { token, ...userDataFromResponse } = response.data.data;
 
         // Store auth data
-        await storeAuthData(token, userData);
+        await storeAuthData(token, userDataFromResponse);
 
         // Update state
-        setUser(userData as UserData);
+        const user = userDataFromResponse as UserData;
+        setUser(user);
         setToken(token);
+
+        // If vehicles are provided, add them after successful registration
+        if (userData.vehicles && userData.vehicles.length > 0 && user.accID) {
+          await addUserVehicles(user.accID, userData.vehicles);
+        }
 
         // Navigate to main app
         router.replace("/(tabs)");
@@ -139,6 +151,31 @@ console.log(dataToSend)
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function to add user vehicles
+  const addUserVehicles = async (customerId: number, vehicles: any[]) => {
+    try {
+      const vehiclePromises = vehicles.map((vehicle) =>
+        vehicleAPI.addVehicle({
+          vehicule_CustomerID: customerId,
+          vehicule_PlateNb: vehicle.plateNumber || "",
+          vehicule_BrandID: vehicle.brandId || vehicle.brand?.id,
+          vehicule_ColorID: vehicle.colorId || vehicle.color?.id,
+          vehicule_FactoryYear: parseInt(vehicle.year) || 0,
+          vehicule_Model: vehicle.model || "",
+          vehicule_Notes: "", // You can add notes field to your form if needed
+          vehicule_Milleage: parseInt(vehicle.mileage) || 0,
+          vehicule_FuelTypeID: vehicle.fuelTypeId || vehicle.fuelType?.id,
+        })
+      );
+
+      await Promise.all(vehiclePromises);
+    } catch (error) {
+      console.error("Error adding vehicles:", error);
+      // Don't throw here to allow registration to succeed even if vehicles fail
+      // You can show a warning instead
     }
   };
 

@@ -8,53 +8,71 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import { useLocalSearchParams } from "expo-router";
 
 const ServiceDetails = () => {
-  const workshop = {
-    id: 1,
-    name: "Quick Fix Auto",
-    location: "Al Quoz, Dubai",
-    rating: "4.8 (120)",
-    distance: "2.5 km",
+  const params = useLocalSearchParams();
+
+  // Parse the data passed from the previous screen
+  const workshop = params.workshop
+    ? JSON.parse(params.workshop as string)
+    : null;
+  const appointments = params.appointments
+    ? JSON.parse(params.appointments as string)
+    : [];
+
+  if (!workshop) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Header title="Book Service" goBack={true} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ fontFamily: "Arimo-Regular", fontSize: wp("4%") }}>
+            No workshop data found
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  const services = [
-    {
-      id: 1,
-      title: "Oil Change",
-      description: "Full synthetic oil change with filter replacement",
-      date: "Oct 15, 2025 • 10:00 AM",
-      price: "$54",
-    },
-    {
-      id: 2,
-      title: "Tire Change",
-      description: "Replace all 4 tires with alignment check",
-      date: "Oct 12, 2025 • 2:30 PM",
-      price: "$120",
-    },
-    {
-      id: 3,
-      title: "Brake Service",
-      description: "Brake pad replacement and rotor inspection",
-      date: "Oct 8, 2025 • 9:00 AM",
-      price: "$85",
-    },
-    {
-      id: 4,
-      title: "Engine Tune-up",
-      description: "Complete engine diagnostics and tune-up",
-      date: "Sep 28, 2025 • 11:00 AM",
-      price: "$150",
-    },
-    {
-      id: 5,
-      title: "AC Repair",
-      description: "AC system recharge and leak check",
-      date: "Sep 20, 2025 • 3:00 PM",
-      price: "$75",
-    },
-  ];
+  // Format time for display
+  const formatTime = (timeString: string) => {
+    const time = new Date(timeString);
+    return time.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Get status text
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 0:
+        return "Pending";
+      case 1:
+        return "Confirmed";
+      case 2:
+        return "In Progress";
+      case 3:
+        return "Completed";
+      case 4:
+        return "Cancelled";
+      default:
+        return "Unknown";
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -84,10 +102,15 @@ const ServiceDetails = () => {
             }}
           >
             <Image
-              source={require("@/assets/images/key.png")}
+              source={
+                workshop.workshop_Image
+                  ? { uri: workshop.workshop_Image }
+                  : require("@/assets/images/key.png")
+              }
               style={{
                 width: wp("12%"), // 48px
                 height: wp("12%"), // 48px
+                borderRadius: wp("1%"),
               }}
             />
           </View>
@@ -100,32 +123,35 @@ const ServiceDetails = () => {
                 marginBottom: hp("0.5%"), // 4px
               }}
             >
-              {workshop.name}
+              {workshop.workshop_Name ||
+                `Workshop ${workshop.workshop_MechanicID}`}
             </Text>
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: hp("0.25%"), // 2px
-              }}
-            >
-              <SvgStarIcon
-                width={wp("4%")} // 16px
-                height={wp("4%")} // 16px
-                color="#F59E0B"
-              />
-              <Text
+            {workshop.workshop_Rating && (
+              <View
                 style={{
-                  fontFamily: "Arimo-Medium",
-                  fontSize: wp("3.5%"), // 14px
-                  color: "#111827",
-                  marginLeft: wp("1%"), // 4px
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: hp("0.25%"), // 2px
                 }}
               >
-                {workshop.rating}
-              </Text>
-            </View>
+                <SvgStarIcon
+                  width={wp("4%")} // 16px
+                  height={wp("4%")} // 16px
+                  color="#F59E0B"
+                />
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"), // 14px
+                    color: "#111827",
+                    marginLeft: wp("1%"), // 4px
+                  }}
+                >
+                  {workshop.workshop_Rating}
+                </Text>
+              </View>
+            )}
 
             <View
               style={{
@@ -148,9 +174,19 @@ const ServiceDetails = () => {
                     marginLeft: wp("1%"), // 4px
                   }}
                 >
-                  {workshop.location}
+                  {workshop.workshop_Location || "Location not specified"}
                 </Text>
               </View>
+
+              <Text
+                style={{
+                  fontFamily: "Arimo-Medium",
+                  fontSize: wp("3%"), // 12px
+                  color: "#6A7282",
+                }}
+              >
+                ID: {workshop.workshop_MechanicID}
+              </Text>
             </View>
           </View>
         </View>
@@ -162,6 +198,7 @@ const ServiceDetails = () => {
           paddingHorizontal: wp("4%"), // 16px
           paddingVertical: hp("2%"), // 16px
           gap: hp("1.5%"), // 12px
+          paddingBottom: hp("10%"),
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -172,87 +209,241 @@ const ServiceDetails = () => {
             marginBottom: hp("1%"), // 8px
           }}
         >
-          Your Services
+          Your Appointments ({appointments.length})
         </Text>
 
-        {services.map((service) => (
-          <Pressable
-            key={service.id}
+        {appointments.length === 0 ? (
+          <View
             style={{
-              padding: wp("4%"), // 16px
+              padding: wp("6%"),
               backgroundColor: "#ffffff",
-              borderRadius: wp("2.5%"), // 10px
-              borderWidth: wp("0.25%"), // 1px
+              borderRadius: wp("2.5%"),
+              borderWidth: wp("0.25%"),
               borderColor: "#E5E7EB",
+              alignItems: "center",
             }}
-            onPress={() => console.log(`Pressed service ${service.id}`)}
           >
-            <View
+            <Text
               style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: hp("1%"), // 8px
+                fontFamily: "Arimo-Regular",
+                fontSize: wp("3.5%"),
+                color: "#6A7282",
+                textAlign: "center",
               }}
             >
-              <View style={{ flex: 1 }}>
+              No appointments found for this workshop.
+            </Text>
+          </View>
+        ) : (
+          appointments.map((appointment: any) => (
+            <Pressable
+              key={appointment.appointment_ID}
+              style={{
+                padding: wp("4%"), // 16px
+                backgroundColor: "#ffffff",
+                borderRadius: wp("2.5%"), // 10px
+                borderWidth: wp("0.25%"), // 1px
+                borderColor: "#E5E7EB",
+              }}
+              onPress={() =>
+                console.log(`Pressed appointment ${appointment.appointment_ID}`)
+              }
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  marginBottom: hp("1%"), // 8px
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("4%"), // 16px
+                      marginBottom: hp("0.5%"), // 4px
+                    }}
+                  >
+                    {appointment.appointment_Title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("3.5%"), // 14px
+                      color: "#6A7282",
+                    }}
+                  >
+                    {appointment.appointment_Description}
+                  </Text>
+                </View>
+
+                {/* Status Badge */}
+                <View
+                  style={{
+                    backgroundColor:
+                      appointment.appointment_Status === 3
+                        ? "#DCFCE7"
+                        : appointment.appointment_Status === 4
+                        ? "#FEE2E2"
+                        : appointment.appointment_Status === 2
+                        ? "#FEF3C7"
+                        : appointment.appointment_Status === 1
+                        ? "#DBEAFE"
+                        : "#F3F4F6",
+                    paddingHorizontal: wp("2%"),
+                    paddingVertical: hp("0.5%"),
+                    borderRadius: wp("1%"),
+                    marginLeft: wp("3%"), // 12px
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("2.5%"), // 10px
+                      color:
+                        appointment.appointment_Status === 3
+                          ? "#166534"
+                          : appointment.appointment_Status === 4
+                          ? "#991B1B"
+                          : appointment.appointment_Status === 2
+                          ? "#92400E"
+                          : appointment.appointment_Status === 1
+                          ? "#1E40AF"
+                          : "#374151",
+                    }}
+                  >
+                    {getStatusText(appointment.appointment_Status)}
+                  </Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: hp("1%"), // 8px
+                }}
+              >
+                <SvgClock
+                  width={wp("3.5%")} // 14px
+                  height={wp("3.5%")} // 14px
+                  color="#6A7282"
+                />
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("4%"), // 16px
-                    marginBottom: hp("0.5%"), // 4px
+                    fontSize: wp("3.5%"), // 14px
+                    color: "#6A7282",
+                    marginLeft: wp("1.5%"), // 6px
                   }}
                 >
-                  {service.title}
+                  {formatDate(appointment.appointment_Date)} •{" "}
+                  {formatTime(appointment.appointment_Time)}
+                </Text>
+              </View>
+
+              {/* Vehicle ID */}
+              <Text
+                style={{
+                  fontFamily: "Arimo-Medium",
+                  fontSize: wp("3%"), // 12px
+                  color: "#6A7282",
+                  marginTop: hp("1%"),
+                }}
+              >
+                Vehicle ID: {appointment.appointment_VehiculeID}
+              </Text>
+            </Pressable>
+          ))
+        )}
+
+        {/* Workshop Info Section (if available) */}
+        {(workshop.workshop_Phone ||
+          workshop.workshop_Email ||
+          workshop.workshop_Description) && (
+          <View
+            style={{
+              marginTop: hp("3%"),
+              padding: wp("4%"),
+              backgroundColor: "#ffffff",
+              borderRadius: wp("2.5%"),
+              borderWidth: wp("0.25%"),
+              borderColor: "#E5E7EB",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: wp("4%"),
+                fontFamily: "Arimo-Bold",
+                marginBottom: hp("1.5%"),
+              }}
+            >
+              Workshop Information
+            </Text>
+
+            {workshop.workshop_Phone && (
+              <View style={{ marginBottom: hp("1%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3%"),
+                    color: "#6A7282",
+                  }}
+                >
+                  Phone
+                </Text>
+                <Text
+                  style={{ fontFamily: "Arimo-Regular", fontSize: wp("3.5%") }}
+                >
+                  {workshop.workshop_Phone}
+                </Text>
+              </View>
+            )}
+
+            {workshop.workshop_Email && (
+              <View style={{ marginBottom: hp("1%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3%"),
+                    color: "#6A7282",
+                  }}
+                >
+                  Email
+                </Text>
+                <Text
+                  style={{ fontFamily: "Arimo-Regular", fontSize: wp("3.5%") }}
+                >
+                  {workshop.workshop_Email}
+                </Text>
+              </View>
+            )}
+
+            {workshop.workshop_Description && (
+              <View>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3%"),
+                    color: "#6A7282",
+                  }}
+                >
+                  Description
                 </Text>
                 <Text
                   style={{
                     fontFamily: "Arimo-Regular",
-                    fontSize: wp("3.5%"), // 14px
-                    color: "#6A7282",
+                    fontSize: wp("3.5%"),
+                    lineHeight: hp("2.5%"),
                   }}
                 >
-                  {service.description}
+                  {workshop.workshop_Description}
                 </Text>
               </View>
-
-              <Text
-                style={{
-                  fontFamily: "Arimo-Bold",
-                  fontSize: wp("4.5%"), // 18px
-                  color: "#EFBF2B",
-                  marginLeft: wp("3%"), // 12px
-                }}
-              >
-                {service.price}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: hp("1%"), // 8px
-              }}
-            >
-              <SvgClock
-                width={wp("3.5%")} // 14px
-                height={wp("3.5%")} // 14px
-                color="#6A7282"
-              />
-              <Text
-                style={{
-                  fontFamily: "Arimo-Medium",
-                  fontSize: wp("3.5%"), // 14px
-                  color: "#6A7282",
-                  marginLeft: wp("1.5%"), // 6px
-                }}
-              >
-                {service.date}
-              </Text>
-            </View>
-          </Pressable>
-        ))}
+            )}
+          </View>
+        )}
       </ScrollView>
     </View>
   );

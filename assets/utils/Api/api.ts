@@ -103,10 +103,123 @@ export const authAPI = {
     accountPhoneNumber: string;
   }) => api.post("account_update.php", accountData),
 
-  // Get account details
-
   // Add other API endpoints as needed
   // logout: () => api.post('logout.php'),
 };
+export const appointmentsAPI = {
+  // Get appointments for a specific customer
+  getByCustomerId: (account_CustomerID: number) =>
+    api.get(
+      `appointment/appointment_select.php?account_CustomerID=${account_CustomerID}`
+    ),
 
+  // Get appointments for a specific mechanic/workshop
+  getByMechanicId: (account_MechanicID: number) =>
+    api.get(
+      `appointment/appointment_select.php?account_MechanicID=${account_MechanicID}`
+    ),
+  // Get appointments for a specific mechanic/workshop
+  createAppointment: (appointmentData: {
+    account_CustomerID: number;
+    account_MechanicID: number;
+    appointment_VehiculeID: number;
+    appointment_Title: string;
+    appointment_Description: string;
+    appointment_Date: string;
+    appointment_Time: string;
+    appointment_Status?: number;
+  }) => api.post("appointment/appointment_new.php", appointmentData),
+};
+
+export const workshopsAPI = {
+  // Get workshop by mechanic ID
+  getByMechanicId: (workshop_MechanicID: number) =>
+    api.get("workshop/workshop_select.php", {
+      params: { workshop_MechanicID },
+    }),
+
+  // Get all workshops (optional)
+  getAll: () => api.get("workshop/workshop_select.php"),
+  getById: (workshop_ID: number) =>
+    api.get(`workshop/workshop_select.php?workshop_ID=${workshop_ID}`),
+};
+
+// Helper function to get unique mechanic IDs from appointments
+export const getUniqueMechanicIdsFromAppointments = (
+  appointments: any[]
+): number[] => {
+  if (!appointments || appointments.length === 0) return [];
+
+  const mechanicIds = appointments
+    .map((appointment) => appointment.account_MechanicID)
+    .filter((id): id is number => id !== null && id !== undefined && id > 0);
+
+  // Return unique IDs
+  return [...new Set(mechanicIds)];
+};
+export const vehicleAPI = {
+  // Get workshop by mechanic ID
+  getVehicleBrands: async () => {
+    const response = await api.get("vehicule/vehicule_brand_select.php", {});
+    // Transform the data to match what DropDown expects
+    const transformedData = response.data.data.brands.map((brand: any) => ({
+      id: brand.brand_ID,
+      name: brand.brand_Name, // or brand.brand_Name if you prefer just the brand name
+    }));
+
+    return transformedData;
+  },
+  getVehicleColors: async () => {
+    const response = await api.get("vehicule/vehicule_color_select.php", {});
+    // Transform the data to match what DropDown expects
+    const transformedData = response.data.data.colors.map((color: any) => ({
+      id: color.color_ID,
+      name: color.color_Name, // or brand.brand_Name if you prefer just the brand name
+    }));
+
+    return transformedData;
+  },
+  getVehicleFuelTypes: async () => {
+    const response = await api.get("vehicule/vehicule_fueltype_select.php", {});
+    // Transform the data to match what DropDown expects
+    const transformedData = response.data.data.fuelTypes.map(
+      (fuelType: any) => ({
+        id: fuelType.fuelType_ID,
+        name: fuelType.fuelType_Name, // or brand.brand_Name if you prefer just the brand name
+      })
+    );
+
+    return transformedData;
+  },
+  addVehicle: (vehicleData: {
+    vehicule_CustomerID: number;
+    vehicule_PlateNb?: string;
+    vehicule_BrandID: number;
+    vehicule_ColorID: number;
+    vehicule_FactoryYear: number | string;
+    vehicule_Model: string;
+    vehicule_Notes?: string;
+    vehicule_Milleage: number | string;
+    vehicule_FuelTypeID: number;
+  }) => api.post("vehicule/vehicule_new.php", vehicleData),
+
+  // Get user's vehicles
+  getVehiclesByCustomerId: (vehicule_CustomerID: number) =>
+    api.get(
+      `vehicule/vehicule_select.php?vehicule_CustomerID=${vehicule_CustomerID}`
+    ),
+
+  // Update vehicle
+  updateVehicle: (vehicleData: {
+    vehicule_ID: number;
+    vehicule_PlateNb?: string;
+    vehicule_BrandID: number;
+    vehicule_ColorID: number;
+    vehicule_FactoryYear: number;
+    vehicule_Model: string;
+    vehicule_Notes?: string;
+    vehicule_Milleage: number;
+    vehicule_FuelTypeID: number;
+  }) => api.post("vehicule/vehicule_update.php", vehicleData),
+};
 export default api;

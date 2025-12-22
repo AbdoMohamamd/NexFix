@@ -1,4 +1,5 @@
 import { Dispatch,  ReactNode, SetStateAction } from "react";
+import { ViewStyle } from "react-native";
 
 export interface IconProps {
   color?: string;
@@ -58,11 +59,12 @@ export interface DropDownProps {
   placeholder: string;
   value?: DropDownOption;
   onValueChange: (value: DropDownOption) => void;
-  IconComponent1: IconComponentType;
+  IconComponent1?: IconComponentType;
   supportText?: string;
   state?: DropDownState;
   options: DropDownOption[];
-  card: boolean;
+  card?: boolean;
+  style:ViewStyle
 }
 
 export interface HeaderProps {
