@@ -1,17 +1,44 @@
+import { useAuth } from "@/app/Context/AuthProvider"; // Import useAuth
 import SvgClock from "@/assets/Icons/Clock";
 import SvgLocation from "@/assets/Icons/Location";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
+import { vehicleAPI } from "@/assets/utils/Api/api"; // Import vehicleAPI
 import Header from "@/components/Header";
 import { useLocalSearchParams } from "expo-router";
-import React from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import React, { useEffect, useState } from "react"; // Add useState and useEffect
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
+// Define Vehicle interface
+interface Vehicle {
+  vehicule_ID: number;
+  vehicule_PlateNb: string;
+  vehicule_BrandID: number;
+  vehicule_ColorID: number;
+  vehicule_FactoryYear: number;
+  vehicule_Model: string;
+  vehicule_CustomerID: number;
+  vehicule_Notes: string;
+  vehicule_Milleage: number;
+  vehicule_FuelTypeID: number;
+}
+
 const ServiceDetails = () => {
   const params = useLocalSearchParams();
+  const { user } = useAuth(); // Get user for fetching vehicles
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [vehicleMap, setVehicleMap] = useState<Record<number, string>>({}); // Map of vehicle ID to model
 
   // Parse the data passed from the previous screen
   const workshop = params.workshop
@@ -21,10 +48,40 @@ const ServiceDetails = () => {
     ? JSON.parse(params.appointments as string)
     : [];
 
+  // Fetch user's vehicles
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      if (!user?.accID) return;
+
+      try {
+        setLoading(true);
+        const response = await vehicleAPI.getVehiclesByCustomerId(user.accID);
+        const data = response.data;
+
+        if (data.success && data.data && Array.isArray(data.data.vehicule)) {
+          setVehicles(data.data.vehicule);
+
+          // Create a map of vehicle ID to vehicle model for quick lookup
+          const map: Record<number, string> = {};
+          data.data.vehicule.forEach((vehicle: Vehicle) => {
+            map[vehicle.vehicule_ID] = vehicle.vehicule_Model;
+          });
+          setVehicleMap(map);
+        }
+      } catch (err) {
+        console.error("Error fetching vehicles:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicles();
+  }, [user]);
+
   if (!workshop) {
     return (
       <View style={{ flex: 1 }}>
-        <Header title="Book Service" goBack={true} />
+        <Header title="Workshop Details" goBack={true} />
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -64,26 +121,65 @@ const ServiceDetails = () => {
       case 1:
         return "Confirmed";
       case 2:
-        return "In Progress";
-      case 3:
         return "Completed";
-      case 4:
-        return "Cancelled";
+
       default:
         return "Unknown";
     }
   };
 
+  // Get status color
+  const getStatusColor = (status: number) => {
+    switch (status) {
+      case 0: // Pending
+        return { bg: "#F3F4F6", text: "#374151" };
+      case 1: // Confirmed
+        return { bg: "#DBEAFE", text: "#1E40AF" };
+      case 2: // In Progress
+        return { bg: "#FEF3C7", text: "#92400E" };
+      case 3: // Completed
+        return { bg: "#DCFCE7", text: "#166534" };
+      case 4: // Cancelled
+        return { bg: "#FEE2E2", text: "#991B1B" };
+      default:
+        return { bg: "#F3F4F6", text: "#374151" };
+    }
+  };
+
+  // Get vehicle model from ID
+  const getVehicleModel = (vehicleId: number): string => {
+    if (vehicleMap[vehicleId]) {
+      return vehicleMap[vehicleId];
+    }
+
+    // Fallback: search in vehicles array
+    const vehicle = vehicles.find((v) => v.vehicule_ID === vehicleId);
+    return vehicle ? vehicle.vehicule_Model : `Vehicle #${vehicleId}`;
+  };
+
+  // Get vehicle details string (with plate if available)
+  const getVehicleDetails = (vehicleId: number): string => {
+    const vehicle = vehicles.find((v) => v.vehicule_ID === vehicleId);
+    if (!vehicle) return `Vehicle #${vehicleId}`;
+
+    let details = vehicle.vehicule_Model;
+    if (vehicle.vehicule_PlateNb) {
+      details += ` • ${vehicle.vehicule_PlateNb}`;
+    }
+    return details;
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <Header title="Book Service" goBack={true} />
+      <Header title="Workshop Details" goBack={true} />
+
       {/* Header with workshop info */}
       <View
         style={{
           backgroundColor: "#ffffff",
-          paddingHorizontal: wp("4%"), // 16px
-          paddingVertical: hp("2%"), // 16px
-          borderBottomWidth: wp("0.25%"), // 1px
+          paddingHorizontal: wp("4%"),
+          paddingVertical: hp("2%"),
+          borderBottomWidth: wp("0.25%"),
           borderBottomColor: "#E5E7EB",
         }}
       >
@@ -91,14 +187,14 @@ const ServiceDetails = () => {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: wp("3%"), // 12px
+            gap: wp("3%"),
           }}
         >
           <View
             style={{
-              padding: wp("3%"), // 12px
+              padding: wp("3%"),
               backgroundColor: "#F3F4F6",
-              borderRadius: wp("2.5%"), // 10px
+              borderRadius: wp("2.5%"),
             }}
           >
             <Image
@@ -108,8 +204,8 @@ const ServiceDetails = () => {
                   : require("@/assets/images/key.png")
               }
               style={{
-                width: wp("12%"), // 48px
-                height: wp("12%"), // 48px
+                width: wp("12%"),
+                height: wp("12%"),
                 borderRadius: wp("1%"),
               }}
             />
@@ -119,8 +215,8 @@ const ServiceDetails = () => {
             <Text
               style={{
                 fontFamily: "Arimo-Medium",
-                fontSize: wp("4.5%"), // 18px
-                marginBottom: hp("0.5%"), // 4px
+                fontSize: wp("4.5%"),
+                marginBottom: hp("0.5%"),
               }}
             >
               {workshop.workshop_Name ||
@@ -132,20 +228,20 @@ const ServiceDetails = () => {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  marginBottom: hp("0.25%"), // 2px
+                  marginBottom: hp("0.25%"),
                 }}
               >
                 <SvgStarIcon
-                  width={wp("4%")} // 16px
-                  height={wp("4%")} // 16px
+                  width={wp("4%")}
+                  height={wp("4%")}
                   color="#F59E0B"
                 />
                 <Text
                   style={{
                     fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"), // 14px
+                    fontSize: wp("3.5%"),
                     color: "#111827",
-                    marginLeft: wp("1%"), // 4px
+                    marginLeft: wp("1%"),
                   }}
                 >
                   {workshop.workshop_Rating}
@@ -157,35 +253,24 @@ const ServiceDetails = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "space-between",
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <SvgLocation
-                  width={wp("3.5%")} // 14px
-                  height={wp("3.5%")} // 14px
-                  color="#6A7282"
-                />
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"), // 14px
-                    color: "#6A7282",
-                    marginLeft: wp("1%"), // 4px
-                  }}
-                >
-                  {workshop.workshop_Location || "Location not specified"}
-                </Text>
-              </View>
-
+              <SvgLocation
+                width={wp("3.5%")}
+                height={wp("3.5%")}
+                color="#6A7282"
+              />
               <Text
                 style={{
                   fontFamily: "Arimo-Medium",
-                  fontSize: wp("3%"), // 12px
+                  fontSize: wp("3.5%"),
                   color: "#6A7282",
+                  marginLeft: wp("1%"),
+                  flex: 1,
                 }}
+                numberOfLines={1}
               >
-                ID: {workshop.workshop_MechanicID}
+                {workshop.workshop_Address || "Location not specified"}
               </Text>
             </View>
           </View>
@@ -195,24 +280,48 @@ const ServiceDetails = () => {
       {/* Services Section */}
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: wp("4%"), // 16px
-          paddingVertical: hp("2%"), // 16px
-          gap: hp("1.5%"), // 12px
+          paddingHorizontal: wp("4%"),
+          paddingVertical: hp("2%"),
+          gap: hp("1.5%"),
           paddingBottom: hp("10%"),
         }}
         showsVerticalScrollIndicator={false}
       >
         <Text
           style={{
-            fontSize: wp("4.5%"), // 18px
+            fontSize: wp("4.5%"),
             fontFamily: "Arimo-Bold",
-            marginBottom: hp("1%"), // 8px
+            marginBottom: hp("1%"),
           }}
         >
           Your Appointments ({appointments.length})
         </Text>
 
-        {appointments.length === 0 ? (
+        {loading ? (
+          <View
+            style={{
+              padding: wp("6%"),
+              backgroundColor: "#ffffff",
+              borderRadius: wp("2.5%"),
+              borderWidth: wp("0.25%"),
+              borderColor: "#E5E7EB",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="small" color="#EFBF2B" />
+            <Text
+              style={{
+                fontFamily: "Arimo-Regular",
+                fontSize: wp("3.5%"),
+                color: "#6A7282",
+                textAlign: "center",
+                marginTop: hp("1%"),
+              }}
+            >
+              Loading vehicle details...
+            </Text>
+          </View>
+        ) : appointments.length === 0 ? (
           <View
             style={{
               padding: wp("6%"),
@@ -235,125 +344,133 @@ const ServiceDetails = () => {
             </Text>
           </View>
         ) : (
-          appointments.map((appointment: any) => (
-            <Pressable
-              key={appointment.appointment_ID}
-              style={{
-                padding: wp("4%"), // 16px
-                backgroundColor: "#ffffff",
-                borderRadius: wp("2.5%"), // 10px
-                borderWidth: wp("0.25%"), // 1px
-                borderColor: "#E5E7EB",
-              }}
-              onPress={() => {}}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginBottom: hp("1%"), // 8px
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontFamily: "Arimo-Medium",
-                      fontSize: wp("4%"), // 16px
-                      marginBottom: hp("0.5%"), // 4px
-                    }}
-                  >
-                    {appointment.appointment_Title}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Arimo-Regular",
-                      fontSize: wp("3.5%"), // 14px
-                      color: "#6A7282",
-                    }}
-                  >
-                    {appointment.appointment_Description}
-                  </Text>
-                </View>
+          appointments.map((appointment: any) => {
+            const statusColor = getStatusColor(appointment.appointment_Status);
+            const vehicleDetails = getVehicleDetails(
+              appointment.appointment_VehiculeID
+            );
 
-                {/* Status Badge */}
+            return (
+              <Pressable
+                key={appointment.appointment_ID}
+                style={{
+                  padding: wp("4%"),
+                  backgroundColor: "#ffffff",
+                  borderRadius: wp("2.5%"),
+                  borderWidth: wp("0.25%"),
+                  borderColor: "#E5E7EB",
+                }}
+                onPress={() => {}}
+              >
                 <View
                   style={{
-                    backgroundColor:
-                      appointment.appointment_Status === 3
-                        ? "#DCFCE7"
-                        : appointment.appointment_Status === 4
-                        ? "#FEE2E2"
-                        : appointment.appointment_Status === 2
-                        ? "#FEF3C7"
-                        : appointment.appointment_Status === 1
-                        ? "#DBEAFE"
-                        : "#F3F4F6",
-                    paddingHorizontal: wp("2%"),
-                    paddingVertical: hp("0.5%"),
-                    borderRadius: wp("1%"),
-                    marginLeft: wp("3%"), // 12px
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginBottom: hp("1%"),
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: wp("4%"),
+                        marginBottom: hp("0.5%"),
+                      }}
+                    >
+                      {appointment.appointment_Title}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Regular",
+                        fontSize: wp("3.5%"),
+                        color: "#6A7282",
+                      }}
+                      numberOfLines={2}
+                    >
+                      {appointment.appointment_Description}
+                    </Text>
+                  </View>
+
+                  {/* Status Badge */}
+                  <View
+                    style={{
+                      backgroundColor: statusColor.bg,
+                      paddingHorizontal: wp("2%"),
+                      paddingVertical: hp("0.5%"),
+                      borderRadius: wp("1%"),
+                      marginLeft: wp("3%"),
+                      alignSelf: "flex-start",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: wp("2.5%"),
+                        color: statusColor.text,
+                      }}
+                    >
+                      {getStatusText(appointment.appointment_Status)}
+                    </Text>
+                  </View>
+                </View>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: hp("1%"),
+                  }}
+                >
+                  <SvgClock
+                    width={wp("3.5%")}
+                    height={wp("3.5%")}
+                    color="#6A7282"
+                  />
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("3.5%"),
+                      color: "#6A7282",
+                      marginLeft: wp("1.5%"),
+                    }}
+                  >
+                    {formatDate(appointment.appointment_Date)} •{" "}
+                    {formatTime(appointment.appointment_Time)}
+                  </Text>
+                </View>
+
+                {/* Vehicle Model */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: hp("1%"),
                   }}
                 >
                   <Text
                     style={{
                       fontFamily: "Arimo-Medium",
-                      fontSize: wp("2.5%"), // 10px
-                      color:
-                        appointment.appointment_Status === 3
-                          ? "#166534"
-                          : appointment.appointment_Status === 4
-                          ? "#991B1B"
-                          : appointment.appointment_Status === 2
-                          ? "#92400E"
-                          : appointment.appointment_Status === 1
-                          ? "#1E40AF"
-                          : "#374151",
+                      fontSize: wp("3%"),
+                      color: "#6A7282",
+                      marginRight: wp("1%"),
                     }}
                   >
-                    {getStatusText(appointment.appointment_Status)}
+                    Vehicle:
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Medium",
+                      fontSize: wp("3.5%"),
+                      color: "#111827",
+                    }}
+                  >
+                    {vehicleDetails}
                   </Text>
                 </View>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: hp("1%"), // 8px
-                }}
-              >
-                <SvgClock
-                  width={wp("3.5%")} // 14px
-                  height={wp("3.5%")} // 14px
-                  color="#6A7282"
-                />
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"), // 14px
-                    color: "#6A7282",
-                    marginLeft: wp("1.5%"), // 6px
-                  }}
-                >
-                  {formatDate(appointment.appointment_Date)} •{" "}
-                  {formatTime(appointment.appointment_Time)}
-                </Text>
-              </View>
-
-              {/* Vehicle ID */}
-              <Text
-                style={{
-                  fontFamily: "Arimo-Medium",
-                  fontSize: wp("3%"), // 12px
-                  color: "#6A7282",
-                  marginTop: hp("1%"),
-                }}
-              >
-                Vehicle ID: {appointment.appointment_VehiculeID}
-              </Text>
-            </Pressable>
-          ))
+              </Pressable>
+            );
+          })
         )}
 
         {/* Workshop Info Section (if available) */}

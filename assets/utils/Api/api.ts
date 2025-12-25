@@ -208,7 +208,20 @@ export const vehicleAPI = {
     api.get(
       `/vehicule/vehicule_details.php?customer_id=${vehicule_CustomerID}`
     ),
+  getVehiclesByCustomerIdForDropDown: async (vehicule_CustomerID: number) => {
+    const response = await api.get(
+      `/vehicule/vehicule_details.php?customer_id=${vehicule_CustomerID}`
+    );
+    const transformedData = response.data.data.vehicule.map(
+      (vehicule: any) => ({
+        id: vehicule.vehicule_ID,
+        name: vehicule.vehicule_Model, // or brand.brand_Name if you prefer just the brand name
+      })
+    );
 
+    return transformedData;
+    // Return formatted response
+  },
   // Update vehicle
   updateVehicle: (vehicleData: {
     vehicule_ID: number;
@@ -236,6 +249,40 @@ export const vehicleAPI = {
     }),
 };
 export const serviceAPI = {
-  getAll: () => api.get("service/part_select.php"),
+  getCategoryByID: (category_id: number) =>
+    api.get("service/service_category_select.php", {
+      params: { category_id },
+    }),
+  getServiceByServiceID: (service_ID: number) =>
+    api.get("service/service_details_select.php", {
+      params: { service_ID },
+    }),
+  getServiceByVehiculeID: (service_VehiculeID: number) =>
+    api.get("service/service_select.php", {
+      params: { service_VehiculeID },
+    }),
+  getServiceMediaByID: (media_ServiceID: number) =>
+    api.get("media/media_select.php", { params: { media_ServiceID } }),
+
+  getServicePartByID: (part_ID: number) =>
+    api.get("service/part_select.php", { params: { part_ID } }),
+};
+export const offersAPI = {
+  getAll: () => api.get("offer/offer_select.php"),
+};
+export const remindersAPI = {
+  getAll: () => api.get("reminder/reminder_select.php"),
+};
+export const rateServiceAPI = {
+  getServiceReviewByServiceID: (serviceReviewServiceID: number) =>
+    api.get("review/review_select.php", {
+      params: { serviceReviewServiceID },
+    }),
+  addServiceReview: (reviewData: {
+    serviceReview_Rating: number;
+    serviceReviewServiceID: number;
+    reviewAccount: number;
+    serviceReview_Comment?: string;
+  }) => api.post("review/review_new.php", reviewData),
 };
 export default api;

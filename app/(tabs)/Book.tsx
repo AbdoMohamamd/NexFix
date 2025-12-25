@@ -2,8 +2,14 @@ import { useAuth } from "@/app/Context/AuthProvider";
 import SvgLocation from "@/assets/Icons/Location";
 import SvgSearch from "@/assets/Icons/Search";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
-import { appointmentsAPI, workshopsAPI } from "@/assets/utils/Api/api";
+import {
+  appointmentsAPI,
+  vehicleAPI,
+  workshopsAPI,
+} from "@/assets/utils/Api/api";
+import { DropDownOption } from "@/assets/utils/Types";
 import Button from "@/components/Button";
+import DropDown from "@/components/DropDown";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -24,7 +30,7 @@ import {
 } from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Define Workshop interface based on your API response
+// Define Workshop interface
 interface Workshop {
   workshop_ID: number;
   workshop_MechanicID: number;
@@ -35,7 +41,7 @@ interface Workshop {
   workshop_Description?: string;
   workshop_Rating?: number;
   workshop_ReviewCount?: number;
-  workshop_Distance?: number;
+  workshop_Address?: number;
   workshop_Image?: string;
   workshop_IsAvailable?: boolean;
 }
@@ -45,7 +51,9 @@ const Book = () => {
   const [selectedService, setSelectedService] = useState("All Services");
   const [searchText, setSearchText] = useState("");
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [vehicles, setVehicles] = useState<DropDownOption[]>([]); // Store user's vehicles
   const [loading, setLoading] = useState(true);
+  const [vehiclesLoading, setVehiclesLoading] = useState(false);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,11 +67,7 @@ const Book = () => {
   // Booking form state
   const [appointmentTitle, setAppointmentTitle] = useState("");
   const [appointmentDescription, setAppointmentDescription] = useState("");
-  const [appointmentDate, setAppointmentDate] = useState(new Date());
-  const [appointmentTime, setAppointmentTime] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [vehicleId, setVehicleId] = useState("6"); // Default vehicle ID
+  const [selectedVehicleId, setSelectedVehicleId] = useState<DropDownOption>(); // Store selected vehicle ID
 
   const services = [
     "All Services",
@@ -86,7 +90,6 @@ const Book = () => {
       const data = response.data;
 
       if (data.success) {
-        // Assuming API returns data.workshops or data.data
         const workshopsData =
           data.data?.workshops || data.workshops || data.data || [];
         setWorkshops(Array.isArray(workshopsData) ? workshopsData : []);
@@ -102,13 +105,38 @@ const Book = () => {
     }
   };
 
+  // Fetch user's vehicles
+  const fetchUserVehicles = async () => {
+    if (!user?.accID) return;
+
+    try {
+      setVehiclesLoading(true);
+      const response = await vehicleAPI.getVehiclesByCustomerIdForDropDown(
+        user.accID
+      );
+      const data = response;
+      if (data.length > 0) {
+        setVehicles(data);
+      } else {
+        setVehicles([]);
+      }
+    } catch (err) {
+      console.error("Error fetching vehicles:", err);
+      setVehicles([]);
+    } finally {
+      setVehiclesLoading(false);
+    }
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchWorkshops();
+    fetchUserVehicles();
   };
 
   useEffect(() => {
     fetchWorkshops();
+    fetchUserVehicles();
   }, []);
 
   // Handle workshop selection for booking
@@ -116,9 +144,7 @@ const Book = () => {
     setSelectedWorkshop(workshop);
     setAppointmentTitle(""); // Reset form
     setAppointmentDescription("");
-    setAppointmentDate(new Date());
-    setAppointmentTime(new Date());
-    setVehicleId("6"); // Reset to default vehicle ID
+    setSelectedVehicleId(selectedVehicleId); // Set first vehicle as default
     setShowBookingModal(true);
   };
 
@@ -142,24 +168,31 @@ const Book = () => {
       return;
     }
 
+    if (!selectedVehicleId) {
+      Alert.alert("Error", "Please select a vehicle");
+      return;
+    }
+
     try {
       setBookingLoading(true);
 
-      // Format date and time
-      const formattedDate = appointmentDate.toISOString().split("T")[0];
-      const formattedTime = appointmentTime.toTimeString().split(" ")[0];
+      // Format date and time (use current date/time)
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split("T")[0];
+      const formattedTime = currentDate.toTimeString().split(" ")[0];
       const appointmentDateTime = `${formattedDate} ${formattedTime}`;
 
       const appointmentData = {
         account_CustomerID: user.accID,
         account_MechanicID: selectedWorkshop.workshop_MechanicID,
-        appointment_VehiculeID: parseInt(vehicleId) || 6, // Use provided vehicle ID or default
+        appointment_VehiculeID: Number(selectedVehicleId.id),
         appointment_Title: appointmentTitle,
         appointment_Description: appointmentDescription,
         appointment_Date: formattedDate,
         appointment_Time: appointmentDateTime,
         appointment_Status: 0, // Default to pending
       };
+
       const response = await appointmentsAPI.createAppointment(appointmentData);
 
       const data = response.data;
@@ -174,7 +207,7 @@ const Book = () => {
           },
         ]);
       } else {
-        Alert.alert("Error", data || "Failed to book appointment");
+        Alert.alert("Error", data.message || "Failed to book appointment");
       }
     } catch (err) {
       console.error("Error booking appointment:", err);
@@ -215,28 +248,6 @@ const Book = () => {
   const formatRating = (rating?: number, count?: number) => {
     if (!rating) return "No ratings";
     return `${rating.toFixed(1)} (${count || 0})`;
-  };
-
-  // Get default price based on service
-  const getDefaultPrice = (serviceType: string) => {
-    switch (serviceType) {
-      case "Oil Change":
-        return "$54";
-      case "Tires":
-        return "$120";
-      case "Brakes":
-        return "$85";
-      case "Engine":
-        return "$150";
-      case "AC Repair":
-        return "$75";
-      case "Battery":
-        return "$65";
-      case "Transmission":
-        return "$200";
-      default:
-        return "$50";
-    }
   };
 
   if (loading) {
@@ -492,15 +503,7 @@ const Book = () => {
                     </View>
 
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text
-                        style={{
-                          fontFamily: "Arimo-Bold",
-                          fontSize: wp("4.5%"),
-                          color: "#EFBF2B",
-                        }}
-                      >
-                        {getDefaultPrice(selectedService)}
-                      </Text>
+                      {/* Availability indicator only */}
                       <View
                         style={{
                           flexDirection: "row",
@@ -560,20 +563,8 @@ const Book = () => {
                       }}
                       numberOfLines={1}
                     >
-                      {workshop.workshop_Location}
+                      {workshop.workshop_Address}
                     </Text>
-                    {workshop.workshop_Distance !== undefined && (
-                      <Text
-                        style={{
-                          fontFamily: "Arimo-Medium",
-                          fontSize: wp("3%"),
-                          color: "#6A7282",
-                          marginLeft: wp("2%"),
-                        }}
-                      >
-                        {formatDistance(workshop.workshop_Distance)}
-                      </Text>
-                    )}
                   </View>
                 </View>
               </View>
@@ -767,88 +758,7 @@ const Book = () => {
                 />
               </View>
 
-              {/* Vehicle ID */}
-              <View style={{ marginBottom: hp("2%") }}>
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"),
-                    marginBottom: hp("0.5%"),
-                    color: "#374151",
-                  }}
-                >
-                  Vehicle ID (Number)*
-                </Text>
-                <TextInput
-                  style={{
-                    borderWidth: wp("0.25%"),
-                    borderColor: "#E5E7EB",
-                    borderRadius: wp("1%"),
-                    padding: wp("3%"),
-                    fontFamily: "Arimo-Regular",
-                    fontSize: wp("4%"),
-                    backgroundColor: "#FFFFFF",
-                  }}
-                  placeholder="e.g., 6"
-                  value={vehicleId}
-                  onChangeText={setVehicleId}
-                  keyboardType="number-pad"
-                />
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Regular",
-                    fontSize: wp("3%"),
-                    color: "#6A7282",
-                    marginTop: hp("0.5%"),
-                  }}
-                >
-                  Enter your vehicle ID number
-                </Text>
-              </View>
-
-              {/* Date Picker */}
-              <View style={{ marginBottom: hp("2%") }}>
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"),
-                    marginBottom: hp("0.5%"),
-                    color: "#374151",
-                  }}
-                >
-                  Appointment Date*
-                </Text>
-                <Pressable
-                  style={{
-                    borderWidth: wp("0.25%"),
-                    borderColor: "#E5E7EB",
-                    borderRadius: wp("1%"),
-                    padding: wp("3%"),
-                    backgroundColor: "#FFFFFF",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                  onPress={() => setShowDatePicker(true)}
-                >
-                  <Text
-                    style={{ fontFamily: "Arimo-Regular", fontSize: wp("4%") }}
-                  >
-                    {appointmentDate.toLocaleDateString()}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Arimo-Medium",
-                      fontSize: wp("3.5%"),
-                      color: "#EFBF2B",
-                    }}
-                  >
-                    Select Date
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* Time Picker */}
+              {/* Vehicle Dropdown */}
               <View style={{ marginBottom: hp("3%") }}>
                 <Text
                   style={{
@@ -858,39 +768,78 @@ const Book = () => {
                     color: "#374151",
                   }}
                 >
-                  Appointment Time*
+                  Select Vehicle*
                 </Text>
-                <Pressable
-                  style={{
-                    borderWidth: wp("0.25%"),
-                    borderColor: "#E5E7EB",
-                    borderRadius: wp("1%"),
-                    padding: wp("3%"),
-                    backgroundColor: "#FFFFFF",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                  onPress={() => setShowTimePicker(true)}
-                >
-                  <Text
-                    style={{ fontFamily: "Arimo-Regular", fontSize: wp("4%") }}
-                  >
-                    {appointmentTime.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </Text>
-                  <Text
+
+                {vehiclesLoading ? (
+                  <View style={{ padding: wp("3%"), alignItems: "center" }}>
+                    <ActivityIndicator size="small" color="#EFBF2B" />
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Regular",
+                        fontSize: wp("3%"),
+                        color: "#6A7282",
+                        marginTop: hp("1%"),
+                      }}
+                    >
+                      Loading vehicles...
+                    </Text>
+                  </View>
+                ) : vehicles.length === 0 ? (
+                  <View
                     style={{
-                      fontFamily: "Arimo-Medium",
-                      fontSize: wp("3.5%"),
-                      color: "#EFBF2B",
+                      padding: wp("3%"),
+                      alignItems: "center",
+                      backgroundColor: "#FEF2F2",
+                      borderRadius: wp("1%"),
                     }}
                   >
-                    Select Time
-                  </Text>
-                </Pressable>
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: wp("3.5%"),
+                        color: "#DC2626",
+                        textAlign: "center",
+                      }}
+                    >
+                      No vehicles found. Please add a vehicle first.
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setShowBookingModal(false);
+                        router.navigate("/(tabs)/Account"); // Navigate to profile to add vehicles
+                      }}
+                      style={{
+                        marginTop: hp("1%"),
+                        paddingHorizontal: wp("4%"),
+                        paddingVertical: hp("0.5%"),
+                        backgroundColor: "#EFBF2B",
+                        borderRadius: wp("1%"),
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Arimo-Medium",
+                          fontSize: wp("3.5%"),
+                          color: "#000000",
+                        }}
+                      >
+                        Add Vehicle
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <DropDown
+                    title="Vehicle"
+                    value={selectedVehicleId}
+                    onValueChange={(selectedOption) =>
+                      setSelectedVehicleId(selectedOption)
+                    }
+                    placeholder="e.g., Toyota"
+                    options={vehicles} // You need to provide an array of brand options
+                    style={{ flex: 1 }}
+                  />
+                )}
               </View>
 
               {/* Submit Button */}
@@ -898,7 +847,7 @@ const Book = () => {
                 onPress={handleSubmitBooking}
                 text={bookingLoading ? "Booking..." : "Confirm Booking"}
                 wrap={false}
-                disabled={bookingLoading}
+                disabled={bookingLoading || vehicles.length === 0}
               />
             </ScrollView>
           </View>

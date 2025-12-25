@@ -1,11 +1,8 @@
 import SvgAngleRight from "@/assets/Icons/AngleRight";
-import SvgBell from "@/assets/Icons/Bell";
 import SvgCar from "@/assets/Icons/Car";
 import SvgClockBackward from "@/assets/Icons/ClockBackward";
 import SvgLogout from "@/assets/Icons/Logout";
 import SvgPlus from "@/assets/Icons/Plus";
-import SvgQuestionMark from "@/assets/Icons/QuestionMark";
-import SvgShield from "@/assets/Icons/Shield";
 import { vehicleAPI } from "@/assets/utils/Api/api"; // Import the API
 import InfoBlock from "@/components/InfoBlock";
 import Constants from "expo-constants";
@@ -17,7 +14,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -42,7 +38,6 @@ interface Vehicle {
 
 const Account = () => {
   const appVersion = Constants.expoConfig?.version || "1.0.0";
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { logout, user } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -446,21 +441,6 @@ const Account = () => {
             >
               My Services
             </Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.navigate("/Pages/ServicesHistory");
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: wp("3.5%"),
-                  fontFamily: "Arimo-Medium",
-                  color: "#F1C02C",
-                }}
-              >
-                View all
-              </Text>
-            </TouchableOpacity>
           </View>
 
           {/* Services History Card */}
@@ -520,141 +500,6 @@ const Account = () => {
 
             <SvgAngleRight width={wp("5%")} height={wp("5%")} color="#9CA3AF" />
           </TouchableOpacity>
-        </View>
-
-        {/* Settings Section */}
-        <View
-          style={{
-            padding: wp("5%"),
-            borderBottomWidth: wp("0.25%"),
-            borderBottomColor: "#F3F4F6",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: wp("4.5%"),
-              fontFamily: "Arimo-Bold",
-              color: "#111827",
-              marginBottom: hp("2%"),
-            }}
-          >
-            Settings
-          </Text>
-
-          {/* Notifications */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingVertical: hp("1.5%"),
-              borderBottomWidth: wp("0.25%"),
-              borderBottomColor: "#F3F4F6",
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ marginRight: wp("3%") }}>
-                <SvgBell width={wp("6%")} height={wp("6%")} color="#6B7280" />
-              </View>
-              <Text
-                style={{
-                  fontSize: wp("4%"),
-                  fontFamily: "Arimo-Regular",
-                  color: "#111827",
-                }}
-              >
-                Notifications
-              </Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: "#D1D5DB", true: "#F1C02C" }}
-              thumbColor="#ffffff"
-            />
-          </View>
-
-          {/* Help and Support Section */}
-          <View style={{ marginTop: hp("2%") }}>
-            <Text
-              style={{
-                fontSize: wp("4.5%"),
-                fontFamily: "Arimo-Bold",
-                color: "#111827",
-                marginBottom: hp("2%"),
-              }}
-            >
-              Help & Support
-            </Text>
-            {/* Help Center */}
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: hp("1.5%"),
-                borderBottomWidth: wp("0.25%"),
-                borderBottomColor: "#F3F4F6",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ marginRight: wp("3%") }}>
-                  <SvgQuestionMark
-                    width={wp("6%")}
-                    height={wp("6%")}
-                    color="#6B7280"
-                  />
-                </View>
-                <Text
-                  style={{
-                    fontSize: wp("4%"),
-                    fontFamily: "Arimo-Regular",
-                    color: "#111827",
-                  }}
-                >
-                  Help Center
-                </Text>
-              </View>
-              <SvgAngleRight
-                width={wp("5%")}
-                height={wp("5%")}
-                color="#9CA3AF"
-              />
-            </TouchableOpacity>
-            {/* Privacy Policy */}
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: hp("1.5%"),
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <View style={{ marginRight: wp("3%") }}>
-                  <SvgShield
-                    width={wp("6%")}
-                    height={wp("6%")}
-                    color="#6B7280"
-                  />
-                </View>
-                <Text
-                  style={{
-                    fontSize: wp("4%"),
-                    fontFamily: "Arimo-Regular",
-                    color: "#111827",
-                  }}
-                >
-                  Privacy Policy
-                </Text>
-              </View>
-              <SvgAngleRight
-                width={wp("5%")}
-                height={wp("5%")}
-                color="#9CA3AF"
-              />
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* App Version */}
