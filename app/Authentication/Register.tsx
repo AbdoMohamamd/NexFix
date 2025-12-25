@@ -47,7 +47,7 @@ const Register = () => {
       mileage: "",
       color: undefined,
       fuelType: undefined,
-      plateNumber: "",
+      plateNumber: "", // Changed: now required
     },
   ]);
   const [brandOptions, setBrandOptions] = useState<DropDownOption[]>([
@@ -61,6 +61,7 @@ const Register = () => {
   ]);
   // Form state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Add a new vehicle
   const addVehicle = () => {
@@ -72,9 +73,10 @@ const Register = () => {
       mileage: "",
       color: undefined,
       fuelType: undefined,
-      plateNumber: "",
+      plateNumber: "", // Changed: now required
     };
     setVehicles([...vehicles, newVehicle]);
+    setApiError(null); // Clear any previous errors when adding vehicle
   };
 
   // Remove a vehicle
@@ -82,6 +84,7 @@ const Register = () => {
     if (vehicles.length > 1) {
       setVehicles(vehicles.filter((vehicle) => vehicle.id !== id));
     }
+    setApiError(null); // Clear any previous errors when removing vehicle
   };
 
   // Update vehicle field
@@ -95,10 +98,14 @@ const Register = () => {
         vehicle.id === id ? { ...vehicle, [field]: value } : vehicle
       )
     );
+    setApiError(null); // Clear any previous errors when updating field
   };
 
   // Validate form
   const validateForm = () => {
+    // Clear previous API error
+    setApiError(null);
+
     // Check required fields
     if (!accUserName.trim()) {
       Alert.alert("Error", "Please enter a username");
@@ -137,6 +144,15 @@ const Register = () => {
       return false;
     }
 
+    // Validate vehicles
+    for (const vehicle of vehicles) {
+      const validationError = validateVehicleFields(vehicle);
+      if (validationError) {
+        Alert.alert("Error", validationError);
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -150,6 +166,7 @@ const Register = () => {
       return "Please enter valid mileage";
     if (!vehicle.color?.id) return "Please select a color";
     if (!vehicle.fuelType?.id) return "Please select a fuel type";
+    if (!vehicle.plateNumber.trim()) return "Please enter plate number"; // Added validation
     return null;
   };
 
@@ -165,8 +182,9 @@ const Register = () => {
         mileage: vehicle.mileage,
         colorId: vehicle.color?.id,
         fuelTypeId: vehicle.fuelType?.id,
-        plateNumber: vehicle.plateNumber || "",
+        plateNumber: vehicle.plateNumber, // Now required
       }));
+
       // Validate vehicle data
       for (const vehicle of vehicleData) {
         if (!vehicle.brandId) {
@@ -196,7 +214,15 @@ const Register = () => {
           Alert.alert("Error", "Please select a fuel type for all vehicles");
           return;
         }
+        if (!vehicle.plateNumber?.trim()) {
+          // Added validation
+          Alert.alert("Error", "Please enter plate number for all vehicles");
+          return;
+        }
       }
+
+      // Clear previous error
+      setApiError(null);
 
       // Call register with vehicle data
       await register({
@@ -208,23 +234,46 @@ const Register = () => {
         vehicles: vehicleData,
       });
     } catch (error: any) {
-      Alert.alert(
-        "Registration Failed",
-        error.message || "Something went wrong. Please try again."
-      );
+      // Try to extract error message from different response formats
+      let errorMessage = "Something went wrong. Please try again.";
+
+      if (error.response?.data?.message) {
+        // If error has response.data.message
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        // If error has response.data.error
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        // If error has a message property
+        errorMessage = error.message;
+      } else if (typeof error === "string") {
+        // If error is a string
+        errorMessage = error;
+      }
+
+      // Set the API error state
+      setApiError(errorMessage);
+
+      // Also show alert with the error
+      Alert.alert("Registration Failed", errorMessage);
     }
   };
+
   useEffect(() => {
     getVehicleData();
   }, []);
+
   const getVehicleData = async () => {
-    const vehicleBrand = await vehicleAPI.getVehicleBrands();
-    setBrandOptions(vehicleBrand);
-    const vehicleColor = await vehicleAPI.getVehicleColors();
-    setColorOptions(vehicleColor);
-    const vehicleFuelType = await vehicleAPI.getVehicleFuelTypes();
-    setFuelTypeOptions(vehicleFuelType);
+    try {
+      const vehicleBrand = await vehicleAPI.getVehicleBrands();
+      setBrandOptions(vehicleBrand);
+      const vehicleColor = await vehicleAPI.getVehicleColors();
+      setColorOptions(vehicleColor);
+      const vehicleFuelType = await vehicleAPI.getVehicleFuelTypes();
+      setFuelTypeOptions(vehicleFuelType);
+    } catch (error) {}
   };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -240,6 +289,61 @@ const Register = () => {
           }}
           showsVerticalScrollIndicator={false}
         >
+          {/* API Error Display */}
+          {apiError && (
+            <View
+              style={{
+                backgroundColor: "#FEF2F2",
+                borderWidth: 1,
+                borderColor: "#FCA5A5",
+                borderRadius: 12,
+                padding: 16,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                <View style={{ marginRight: 12 }}>
+                  <Text style={{ fontSize: 20, color: "#DC2626" }}>⚠️</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Bold",
+                      fontSize: 14,
+                      color: "#DC2626",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Registration Error
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: 13,
+                      color: "#DC2626",
+                    }}
+                  >
+                    {apiError}
+                  </Text>
+                  <Pressable
+                    onPress={() => setApiError(null)}
+                    style={{ marginTop: 8 }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: 12,
+                        color: "#DC2626",
+                        textDecorationLine: "underline",
+                      }}
+                    >
+                      Dismiss
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* Personal Information Card */}
           <View
             style={{
@@ -261,28 +365,40 @@ const Register = () => {
             <CustomTextInput
               title="Username"
               value={accUserName}
-              onChangeText={setAccUserName}
+              onChangeText={(value) => {
+                setAccUserName(value);
+                setApiError(null); // Clear error when user types
+              }}
               placeholder="Enter your username"
             />
 
             <CustomTextInput
               title="Phone Number"
               value={accountPhoneNumber}
-              onChangeText={setAccountPhoneNumber}
+              onChangeText={(value) => {
+                setAccountPhoneNumber(value);
+                setApiError(null); // Clear error when user types
+              }}
               placeholder="Enter your phone number"
             />
 
             <CustomTextInput
               title="Email"
               value={accountEmail}
-              onChangeText={setAccountEmail}
+              onChangeText={(value) => {
+                setAccountEmail(value);
+                setApiError(null); // Clear error when user types
+              }}
               placeholder="Enter your email"
             />
 
             <CustomTextInput
               title="Password"
               value={accPassword}
-              onChangeText={setAccountPassword}
+              onChangeText={(value) => {
+                setAccountPassword(value);
+                setApiError(null); // Clear error when user types
+              }}
               placeholder="Enter your password (min. 6 characters)"
               secureTextEntry={!showPassword}
               IconComponent2={showPassword ? SvgEyeSlash : SvgEye}
@@ -292,7 +408,10 @@ const Register = () => {
             <CustomTextInput
               title="Confirm Password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(value) => {
+                setConfirmPassword(value);
+                setApiError(null); // Clear error when user types
+              }}
               placeholder="Confirm your password"
               secureTextEntry={!showConfirmPassword}
               IconComponent2={showConfirmPassword ? SvgEyeSlash : SvgEye}
@@ -389,12 +508,12 @@ const Register = () => {
                       updateVehicle(vehicle.id, "brand", selectedOption)
                     }
                     placeholder="e.g., Toyota"
-                    options={brandOptions} // You need to provide an array of brand options
+                    options={brandOptions}
                     style={{ flex: 1 }}
                   />
                   <CustomTextInput
                     title="Model"
-                    value={vehicle.model} // Fixed
+                    value={vehicle.model}
                     onChangeText={(value) =>
                       updateVehicle(vehicle.id, "model", value)
                     }
@@ -435,7 +554,7 @@ const Register = () => {
                       updateVehicle(vehicle.id, "color", selectedOption)
                     }
                     placeholder="e.g., Red"
-                    options={colorOptions} // You need to provide an array of brand options
+                    options={colorOptions}
                     style={{ flex: 1 }}
                   />
 
@@ -445,8 +564,8 @@ const Register = () => {
                     onValueChange={(selectedOption) =>
                       updateVehicle(vehicle.id, "fuelType", selectedOption)
                     }
-                    placeholder="e.g., Diezel"
-                    options={fuelTypeOptions} // You need to provide an array of brand options
+                    placeholder="e.g., Diesel"
+                    options={fuelTypeOptions}
                     style={{ flex: 1 }}
                   />
                 </View>
@@ -454,13 +573,13 @@ const Register = () => {
                   style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}
                 >
                   <CustomTextInput
-                    title="Plate Number"
-                    value={vehicle.plateNumber} // Fixed
-                    onChangeText={
-                      (value) => updateVehicle(vehicle.id, "plateNumber", value) // Fixed
+                    title="Plate Number *"
+                    value={vehicle.plateNumber}
+                    onChangeText={(value) =>
+                      updateVehicle(vehicle.id, "plateNumber", value)
                     }
                     style={{ flex: 1 }}
-                    placeholder="(Optional)"
+                    placeholder="e.g., ABC-123"
                   />
                 </View>
               </View>

@@ -8,6 +8,9 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,13 +20,13 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../Context/AuthProvider";
 
 const AddVehicle = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const [brandOptions, setBrandOptions] = useState([]);
   const [colorOptions, setColorOptions] = useState([]);
@@ -36,8 +39,23 @@ const AddVehicle = () => {
     mileage: "",
     color: undefined as any,
     fuelType: undefined as any,
-    plateNumber: "",
+    plateNumber: "", // Now required
   });
+
+  // Listen to keyboard show/hide events
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     fetchDropdownData();
@@ -103,6 +121,10 @@ const AddVehicle = () => {
       Alert.alert("Error", "Please select a fuel type");
       return false;
     }
+    if (!vehicleData.plateNumber.trim()) {
+      Alert.alert("Error", "Please enter plate number"); // Added validation
+      return false;
+    }
     return true;
   };
 
@@ -114,7 +136,7 @@ const AddVehicle = () => {
 
       await vehicleAPI.addVehicle({
         vehicule_CustomerID: user!.accID,
-        vehicule_PlateNb: vehicleData.plateNumber || "",
+        vehicule_PlateNb: vehicleData.plateNumber, // Now required
         vehicule_BrandID: vehicleData.brand?.id,
         vehicule_ColorID: vehicleData.color?.id,
         vehicule_FactoryYear:
@@ -139,6 +161,10 @@ const AddVehicle = () => {
     }
   };
 
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   if (isLoading) {
     return (
       <View style={styles.container}>
@@ -152,107 +178,121 @@ const AddVehicle = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Header title="Add Vehicle" goBack={true} />
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.formCard}>
-          <Text style={styles.cardTitle}>Vehicle Information</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.container}>
+        <Header title="Add Vehicle" goBack={true} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollViewContent,
+            { paddingBottom: keyboardVisible ? hp("10%") : hp("2%") },
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.formCard}>
+            <Text style={styles.cardTitle}>Vehicle Information</Text>
 
-          {/* Brand */}
-          <View style={styles.inputRow}>
-            <DropDown
-              title="Brand *"
-              value={vehicleData.brand}
-              onValueChange={(selectedOption) =>
-                handleInputChange("brand", selectedOption)
-              }
-              placeholder="Select brand"
-              options={brandOptions}
-            />
+            {/* Brand */}
+            <View style={styles.inputRow}>
+              <DropDown
+                title="Brand *"
+                value={vehicleData.brand}
+                onValueChange={(selectedOption) =>
+                  handleInputChange("brand", selectedOption)
+                }
+                placeholder="Select brand"
+                options={brandOptions}
+              />
+            </View>
+
+            {/* Model */}
+            <View style={styles.inputRow}>
+              <CustomTextInput
+                title="Model *"
+                value={vehicleData.model}
+                onChangeText={(value) => handleInputChange("model", value)}
+                placeholder="e.g., Camry"
+              />
+            </View>
+
+            {/* Year */}
+            <View style={styles.inputRow}>
+              <CustomTextInput
+                title="Year *"
+                value={vehicleData.year}
+                onChangeText={(value) => handleInputChange("year", value)}
+                placeholder="e.g., 2020"
+              />
+            </View>
+
+            {/* Mileage */}
+            <View style={styles.inputRow}>
+              <CustomTextInput
+                title="Mileage *"
+                value={vehicleData.mileage}
+                onChangeText={(value) => handleInputChange("mileage", value)}
+                placeholder="e.g., 50000"
+              />
+            </View>
+
+            {/* Color */}
+            <View style={styles.inputRow}>
+              <DropDown
+                title="Color *"
+                value={vehicleData.color}
+                onValueChange={(selectedOption) =>
+                  handleInputChange("color", selectedOption)
+                }
+                placeholder="Select color"
+                options={colorOptions}
+              />
+            </View>
+
+            {/* Fuel Type */}
+            <View style={styles.inputRow}>
+              <DropDown
+                title="Fuel Type *"
+                value={vehicleData.fuelType}
+                onValueChange={(selectedOption) =>
+                  handleInputChange("fuelType", selectedOption)
+                }
+                placeholder="Select fuel type"
+                options={fuelTypeOptions}
+              />
+            </View>
+
+            {/* Plate Number (Required) */}
+            <View style={styles.inputRow}>
+              <CustomTextInput
+                title="Plate Number *"
+                value={vehicleData.plateNumber}
+                onChangeText={(value) =>
+                  handleInputChange("plateNumber", value)
+                }
+                placeholder="e.g., ABC-123"
+              />
+            </View>
           </View>
 
-          {/* Model */}
-          <View style={styles.inputRow}>
-            <CustomTextInput
-              title="Model *"
-              value={vehicleData.model}
-              onChangeText={(value) => handleInputChange("model", value)}
-              placeholder="e.g., Camry"
+          {/* Required fields note */}
+          <Text style={styles.requiredNote}>* Required fields</Text>
+
+          {/* Submit Button - Ensure it's always visible */}
+          <View style={styles.buttonContainer}>
+            <Button
+              text={isSubmitting ? "Adding Vehicle..." : "Add Vehicle"}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              wrap={false}
             />
           </View>
-
-          {/* Year */}
-          <View style={styles.inputRow}>
-            <CustomTextInput
-              title="Year *"
-              value={vehicleData.year}
-              onChangeText={(value) => handleInputChange("year", value)}
-              placeholder="e.g., 2020"
-            />
-          </View>
-
-          {/* Mileage */}
-          <View style={styles.inputRow}>
-            <CustomTextInput
-              title="Mileage *"
-              value={vehicleData.mileage}
-              onChangeText={(value) => handleInputChange("mileage", value)}
-              placeholder="e.g., 50000"
-            />
-          </View>
-
-          {/* Color */}
-          <View style={styles.inputRow}>
-            <DropDown
-              title="Color *"
-              value={vehicleData.color}
-              onValueChange={(selectedOption) =>
-                handleInputChange("color", selectedOption)
-              }
-              placeholder="Select color"
-              options={colorOptions}
-            />
-          </View>
-
-          {/* Fuel Type */}
-          <View style={styles.inputRow}>
-            <DropDown
-              title="Fuel Type *"
-              value={vehicleData.fuelType}
-              onValueChange={(selectedOption) =>
-                handleInputChange("fuelType", selectedOption)
-              }
-              placeholder="Select fuel type"
-              options={fuelTypeOptions}
-            />
-          </View>
-
-          {/* Plate Number (Optional) */}
-          <View style={styles.inputRow}>
-            <CustomTextInput
-              title="Plate Number"
-              value={vehicleData.plateNumber}
-              onChangeText={(value) => handleInputChange("plateNumber", value)}
-              placeholder="(Optional) e.g., ABC-123"
-            />
-          </View>
-        </View>
-
-        {/* Submit Button */}
-        <View style={styles.buttonContainer}>
-          <Button
-            text={isSubmitting ? "Adding Vehicle..." : "Add Vehicle"}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            wrap={false}
-          />
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -300,6 +340,13 @@ const styles = StyleSheet.create({
   inputRow: {
     marginBottom: hp("2%"),
     width: "100%",
+  },
+  requiredNote: {
+    fontSize: wp("3.5%"),
+    fontFamily: "Arimo-Regular",
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: hp("1%"),
   },
   buttonContainer: {
     marginTop: hp("1%"),

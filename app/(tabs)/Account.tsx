@@ -6,8 +6,8 @@ import SvgPlus from "@/assets/Icons/Plus";
 import { vehicleAPI } from "@/assets/utils/Api/api"; // Import the API
 import InfoBlock from "@/components/InfoBlock";
 import Constants from "expo-constants";
-import { Link, router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { Link, router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -24,6 +24,7 @@ import {
 } from "react-native-responsive-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../Context/AuthProvider";
+
 // Define vehicle interface
 interface Vehicle {
   vehicule_ID: number;
@@ -42,6 +43,7 @@ const Account = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [shouldRefresh, setShouldRefresh] = useState(false);
 
   // Format mileage for display
   const formatMileage = (mileage: number) => {
@@ -66,15 +68,31 @@ const Account = () => {
     } finally {
       setIsLoading(false);
       setRefreshing(false);
+      setShouldRefresh(false); // Reset refresh flag
     }
   };
 
-  // Load vehicles on component mount
+  // Load vehicles on component mount and when user changes
   useEffect(() => {
     if (user?.accID) {
       fetchVehicles();
     }
   }, [user?.accID]);
+
+  // Use focus effect to refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      // Refresh vehicles when screen comes into focus
+      if (user?.accID) {
+        fetchVehicles();
+      }
+
+      // Cleanup function
+      return () => {
+        // Optional: You can add cleanup logic here if needed
+      };
+    }, [user?.accID])
+  );
 
   // Handle pull to refresh
   const handleRefresh = () => {
@@ -92,6 +110,7 @@ const Account = () => {
 
   // Navigate to add vehicle
   const navigateToAddVehicle = () => {
+    // Navigate to AddVehicle screen
     router.push("/Pages/AddVehicle");
   };
 
