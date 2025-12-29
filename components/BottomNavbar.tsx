@@ -7,6 +7,7 @@ import {
 } from "react-native-responsive-screen";
 
 import SvgCalendar from "@/assets/Icons/Calendar";
+import SvgClockBackward from "@/assets/Icons/ClockBackward";
 import SvgHomeAlt from "@/assets/Icons/HomeAlt";
 import SvgTag from "@/assets/Icons/Tag";
 import SvgUser from "@/assets/Icons/User";
@@ -14,7 +15,14 @@ import { BottomNavbarIconProps } from "@/assets/utils/Types";
 
 const TAB_CONFIG = [
   { name: "index", title: "Home", Icon: SvgHomeAlt, label: "Home" },
+
   { name: "Book", title: "Book", Icon: SvgCalendar, label: "Book" },
+  {
+    name: "Services",
+    title: "Services",
+    Icon: SvgClockBackward,
+    label: "Services",
+  },
   { name: "Offers", title: "Offers", Icon: SvgTag, label: "Offers" },
   { name: "Account", title: "Account", Icon: SvgUser, label: "Account" },
 ];
