@@ -33,13 +33,22 @@ interface Vehicle {
   vehicule_FuelTypeID: number;
 }
 
+// Define Brand interface
+interface Brand {
+  brand_ID: number;
+  brand_Name: string;
+}
+
 const ServiceDetails = () => {
   const params = useLocalSearchParams();
   const { user } = useAuth(); // Get user for fetching vehicles
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(false);
-  const [vehicleMap, setVehicleMap] = useState<Record<number, string>>({}); // Map of vehicle ID to model
-
+  const [brandsLoading, setBrandsLoading] = useState<Record<number, boolean>>(
+    {}
+  ); // Track loading per brand
+  const [brands, setBrands] = useState<Record<number, Brand>>({}); // Map of brand ID to brand object
+  const [vehicleMap, setVehicleMap] = useState<Record<number, Vehicle>>({}); // Map of vehicle ID to vehicle
   // Parse the data passed from the previous screen
   const workshop = params.workshop
     ? JSON.parse(params.workshop as string)
@@ -59,14 +68,20 @@ const ServiceDetails = () => {
         const data = response.data;
 
         if (data.success && data.data && Array.isArray(data.data.vehicule)) {
-          setVehicles(data.data.vehicule);
+          const vehiclesData = data.data.vehicule;
+          setVehicles(vehiclesData);
 
-          // Create a map of vehicle ID to vehicle model for quick lookup
-          const map: Record<number, string> = {};
-          data.data.vehicule.forEach((vehicle: Vehicle) => {
-            map[vehicle.vehicule_ID] = vehicle.vehicule_Model;
+          // Create a map of vehicle ID to vehicle for quick lookup
+          const map: Record<number, Vehicle> = {};
+          vehiclesData.forEach((vehicle: Vehicle) => {
+            map[vehicle.vehicule_ID] = vehicle;
           });
           setVehicleMap(map);
+
+          // Fetch brands for all unique brand IDs
+          const uniqueBrandIds = [
+            ...new Set(vehiclesData.map((v: Vehicle) => v.vehicule_BrandID)),
+          ];
         }
       } catch (err) {
         console.error("Error fetching vehicles:", err);
@@ -77,6 +92,58 @@ const ServiceDetails = () => {
 
     fetchVehicles();
   }, [user]);
+
+  // Fetch brand by ID
+  const fetchBrand = async (brandId: number) => {
+    if (!brandId || brands[brandId]) return;
+
+    try {
+      setBrandsLoading((prev) => ({ ...prev, [brandId]: true }));
+      const response = await vehicleAPI.getVehicleBrandById(brandId);
+      const data = response.data;
+      if (data.success && data.data) {
+        const brandData = data.data.brand || data.data;
+        if (brandData) {
+          setBrands((prev) => ({
+            ...prev,
+            [brandId]: {
+              brand_ID: brandData.brand_ID || brandId,
+              brand_Name: brandData.brand_Name || `Brand #${brandId}`,
+            },
+          }));
+        }
+      }
+    } catch (err) {
+      console.error(`Error fetching brand ${brandId}:`, err);
+      // Set a fallback brand object if fetch fails
+      setBrands((prev) => ({
+        ...prev,
+        [brandId]: {
+          brand_ID: brandId,
+          brand_Name: `Brand #${brandId}`,
+        },
+      }));
+    } finally {
+      setBrandsLoading((prev) => ({ ...prev, [brandId]: false }));
+    }
+  };
+
+  // Fetch brands for appointments when they're loaded
+  useEffect(() => {
+    if (appointments.length > 0) {
+      appointments.forEach((appointment: any) => {
+        const vehicleId = appointment.appointment_VehiculeID;
+        const vehicle = vehicleMap[vehicleId];
+        if (
+          vehicle &&
+          vehicle.vehicule_BrandID &&
+          !brands[vehicle.vehicule_BrandID]
+        ) {
+          fetchBrand(vehicle.vehicule_BrandID);
+        }
+      });
+    }
+  }, [appointments, vehicleMap]);
 
   if (!workshop) {
     return (
@@ -116,13 +183,12 @@ const ServiceDetails = () => {
   // Get status text
   const getStatusText = (status: number) => {
     switch (status) {
-      case 0:
-        return "Pending";
       case 1:
-        return "Confirmed";
+        return "Pending";
       case 2:
+        return "Confirmed";
+      case 3:
         return "Completed";
-
       default:
         return "Unknown";
     }
@@ -148,25 +214,35 @@ const ServiceDetails = () => {
 
   // Get vehicle model from ID
   const getVehicleModel = (vehicleId: number): string => {
-    if (vehicleMap[vehicleId]) {
-      return vehicleMap[vehicleId];
-    }
-
-    // Fallback: search in vehicles array
-    const vehicle = vehicles.find((v) => v.vehicule_ID === vehicleId);
+    const vehicle = vehicleMap[vehicleId];
     return vehicle ? vehicle.vehicule_Model : `Vehicle #${vehicleId}`;
   };
 
-  // Get vehicle details string (with plate if available)
+  // Get vehicle details string (with brand, model, and plate if available)
   const getVehicleDetails = (vehicleId: number): string => {
-    const vehicle = vehicles.find((v) => v.vehicule_ID === vehicleId);
+    const vehicle = vehicleMap[vehicleId];
     if (!vehicle) return `Vehicle #${vehicleId}`;
 
-    let details = vehicle.vehicule_Model;
+    // Get brand name
+    const brand = vehicle.vehicule_BrandID
+      ? brands[vehicle.vehicule_BrandID]
+      : null;
+    const brandName = brand?.brand_Name || `Brand #${vehicle.vehicule_BrandID}`;
+
+    let details = `${brandName} • ${vehicle.vehicule_Model}`;
+
     if (vehicle.vehicule_PlateNb) {
       details += ` • ${vehicle.vehicule_PlateNb}`;
     }
+
     return details;
+  };
+
+  // Check if brand is loading for a specific vehicle
+  const isBrandLoading = (vehicleId: number): boolean => {
+    const vehicle = vehicleMap[vehicleId];
+    if (!vehicle || !vehicle.vehicule_BrandID) return false;
+    return brandsLoading[vehicle.vehicule_BrandID] || false;
   };
 
   return (
@@ -349,6 +425,9 @@ const ServiceDetails = () => {
             const vehicleDetails = getVehicleDetails(
               appointment.appointment_VehiculeID
             );
+            const isVehicleBrandLoading = isBrandLoading(
+              appointment.appointment_VehiculeID
+            );
 
             return (
               <Pressable
@@ -440,7 +519,7 @@ const ServiceDetails = () => {
                   </Text>
                 </View>
 
-                {/* Vehicle Model */}
+                {/* Vehicle Details */}
                 <View
                   style={{
                     flexDirection: "row",
@@ -458,15 +537,36 @@ const ServiceDetails = () => {
                   >
                     Vehicle:
                   </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Arimo-Medium",
-                      fontSize: wp("3.5%"),
-                      color: "#111827",
-                    }}
-                  >
-                    {vehicleDetails}
-                  </Text>
+                  {isVehicleBrandLoading ? (
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <ActivityIndicator
+                        size="small"
+                        color="#EFBF2B"
+                        style={{ marginRight: wp("1%") }}
+                      />
+                      <Text
+                        style={{
+                          fontFamily: "Arimo-Regular",
+                          fontSize: wp("3.5%"),
+                          color: "#9CA3AF",
+                        }}
+                      >
+                        Loading details...
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: wp("3.5%"),
+                        color: "#111827",
+                      }}
+                    >
+                      {vehicleDetails}
+                    </Text>
+                  )}
                 </View>
               </Pressable>
             );

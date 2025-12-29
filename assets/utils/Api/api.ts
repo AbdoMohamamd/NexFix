@@ -284,5 +284,11 @@ export const rateServiceAPI = {
     reviewAccount: number;
     serviceReview_Comment?: string;
   }) => api.post("review/review_new.php", reviewData),
+  updateServiceReview: (reviewData: {
+    serviceReview_ID: number;
+    serviceReview_Rating: number;
+    serviceReview_Comment?: string;
+    serviceReview_Date: string;
+  }) => api.post("review/review_update.php", reviewData),
 };
 export default api;

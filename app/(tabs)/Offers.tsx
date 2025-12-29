@@ -75,12 +75,13 @@ const Offers = () => {
     fetchOffers();
   };
 
-  // Format date to shorter format (e.g., "Dec 31")
+  // Format date to show month, day, and year (e.g., "Dec 31, 2024")
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -89,18 +90,39 @@ const Offers = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    // If same month, show "Dec 15-31"
+    // If same year and month, show "Dec 15-31, 2024"
     if (
       start.getMonth() === end.getMonth() &&
       start.getFullYear() === end.getFullYear()
     ) {
       return `${start.toLocaleDateString("en-US", {
         month: "short",
-      })} ${start.getDate()}-${end.getDate()}`;
+      })} ${start.getDate()}-${end.getDate()}, ${end.getFullYear()}`;
     }
 
-    // Different months: "Dec 15 - Jan 10"
+    // If same year but different months: "Dec 15 - Jan 10, 2024"
+    if (start.getFullYear() === end.getFullYear()) {
+      return `${start.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })} - ${end.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })}, ${end.getFullYear()}`;
+    }
+
+    // Different years: "Dec 15, 2024 - Jan 10, 2025"
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
+  // Format short date for display (e.g., "Dec 31, 2024")
+  const formatShortDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   // Share offer via device's sharing options
@@ -117,13 +139,7 @@ const Offers = () => {
           offer.serviceOfferDiscountType === "Percentage" ? "OFF" : "DISCOUNT"
         }\n\n` +
         `📝 ${offer.serviceOffer_Description}\n\n` +
-        `📅 Valid until: ${new Date(
-          offer.serviceOffer_EndDate
-        ).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}\n\n` +
+        `📅 Valid until: ${formatShortDate(offer.serviceOffer_EndDate)}\n\n` +
         `👉 Grab this exclusive offer now!`;
 
       const result = await Share.share({
@@ -379,7 +395,7 @@ const Offers = () => {
                           marginBottom: hp("0.25%"),
                         }}
                       >
-                        Valid Until
+                        Valid Period
                       </Text>
                       <Text
                         style={{
@@ -387,7 +403,7 @@ const Offers = () => {
                           fontSize: wp("3.5%"),
                           color: "#111827",
                         }}
-                        numberOfLines={1}
+                        numberOfLines={2}
                         ellipsizeMode="tail"
                       >
                         {formatDateRange(

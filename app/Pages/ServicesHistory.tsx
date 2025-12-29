@@ -309,9 +309,9 @@ const ServicesHistory = () => {
       case 1:
         return "Pending";
       case 2:
-        return "Completed";
-      case 3:
         return "In Progress";
+      case 3:
+        return "Completed";
       default:
         return "Unknown";
     }
@@ -323,9 +323,9 @@ const ServicesHistory = () => {
       case 1:
         return "#FEF3C7"; // Yellow for pending
       case 2:
-        return "#D1FAE5"; // Green for completed
+        return "#DBEAFE"; // Green for completed
       case 3:
-        return "#DBEAFE"; // Blue for in progress
+        return "#D1FAE5"; // Blue for in progress
       default:
         return "#F3F4F6";
     }
@@ -585,12 +585,12 @@ const ServicesHistory = () => {
             <View style={{ gap: hp("1%") }}>
               <Button
                 onPress={() => {
-                 router.navigate({
-                   pathname: "/Pages/RateService",
-                   params: {
-                    serviceId:service.service_ID,
-                   },
-                 });
+                  router.navigate({
+                    pathname: "/Pages/RateService",
+                    params: {
+                      serviceId: service.service_ID,
+                    },
+                  });
                 }}
                 text="Rate"
                 type="secondary"

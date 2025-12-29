@@ -1,6 +1,5 @@
 import { useAuth } from "@/app/Context/AuthProvider";
 import SvgLocation from "@/assets/Icons/Location";
-import SvgSearch from "@/assets/Icons/Search";
 import SvgStarIcon from "@/assets/Icons/StarIcon";
 import {
   appointmentsAPI,
@@ -10,6 +9,7 @@ import {
 import { DropDownOption } from "@/assets/utils/Types";
 import Button from "@/components/Button";
 import DropDown from "@/components/DropDown";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,6 +17,7 @@ import {
   Alert,
   Image,
   Modal,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -67,7 +68,13 @@ const Book = () => {
   // Booking form state
   const [appointmentTitle, setAppointmentTitle] = useState("");
   const [appointmentDescription, setAppointmentDescription] = useState("");
-  const [selectedVehicleId, setSelectedVehicleId] = useState<DropDownOption>(); // Store selected vehicle ID
+  const [selectedVehicleId, setSelectedVehicleId] = useState<DropDownOption>();
+
+  // Date and Time state
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const services = [
     "All Services",
@@ -79,6 +86,20 @@ const Book = () => {
     "Battery",
     "Transmission",
   ];
+
+  // Set minimum date to today
+  const minDate = new Date();
+
+  // Set maximum date to 3 months from now
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 3);
+
+  // Set time constraints (9 AM to 6 PM)
+  const minTime = new Date();
+  minTime.setHours(9, 0, 0, 0);
+
+  const maxTime = new Date();
+  maxTime.setHours(18, 0, 0, 0);
 
   // Fetch all workshops
   const fetchWorkshops = async () => {
@@ -144,8 +165,75 @@ const Book = () => {
     setSelectedWorkshop(workshop);
     setAppointmentTitle(""); // Reset form
     setAppointmentDescription("");
-    setSelectedVehicleId(selectedVehicleId); // Set first vehicle as default
+    setSelectedVehicleId(selectedVehicleId);
+
+    // Set default date and time (tomorrow at 10 AM)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    setSelectedDate(tomorrow);
+    setSelectedTime(tomorrow);
+
     setShowBookingModal(true);
+  };
+
+  // Handle date change
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      // Keep the time from the previously selected time
+      const newDate = new Date(selectedDate);
+      newDate.setHours(selectedTime.getHours(), selectedTime.getMinutes());
+      setSelectedDate(newDate);
+      setSelectedTime(newDate);
+    }
+  };
+
+  // Handle time change
+  const onTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      // Keep the date from the previously selected date
+      const newTime = new Date(selectedDate);
+      newTime.setHours(selectedTime.getHours(), selectedTime.getMinutes());
+      setSelectedTime(newTime);
+    }
+  };
+
+  // Format date for display
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Format time for display
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Check if selected time is within business hours
+  const isWithinBusinessHours = (time: Date) => {
+    const hours = time.getHours();
+    const minutes = time.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+
+    const minHours = minTime.getHours();
+    const minMinutes = minTime.getMinutes();
+    const minTotalMinutes = minHours * 60 + minMinutes;
+
+    const maxHours = maxTime.getHours();
+    const maxMinutes = maxTime.getMinutes();
+    const maxTotalMinutes = maxHours * 60 + maxMinutes;
+
+    return totalMinutes >= minTotalMinutes && totalMinutes <= maxTotalMinutes;
   };
 
   // Handle booking submission
@@ -173,13 +261,29 @@ const Book = () => {
       return;
     }
 
+    // Check if selected date is valid
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDateOnly = new Date(selectedDate);
+    selectedDateOnly.setHours(0, 0, 0, 0);
+
+    if (selectedDateOnly < today) {
+      Alert.alert("Error", "Please select a future date");
+      return;
+    }
+
+    // Check if time is within business hours
+    if (!isWithinBusinessHours(selectedTime)) {
+      Alert.alert("Error", "Please select a time between 9:00 AM and 6:00 PM");
+      return;
+    }
+
     try {
       setBookingLoading(true);
 
-      // Format date and time (use current date/time)
-      const currentDate = new Date();
-      const formattedDate = currentDate.toISOString().split("T")[0];
-      const formattedTime = currentDate.toTimeString().split(" ")[0];
+      // Format date and time for API
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      const formattedTime = selectedTime.toTimeString().split(" ")[0];
       const appointmentDateTime = `${formattedDate} ${formattedTime}`;
 
       const appointmentData = {
@@ -190,7 +294,7 @@ const Book = () => {
         appointment_Description: appointmentDescription,
         appointment_Date: formattedDate,
         appointment_Time: appointmentDateTime,
-        appointment_Status: 0, // Default to pending
+        appointment_Status: 1, // Default to pending
       };
 
       const response = await appointmentsAPI.createAppointment(appointmentData);
@@ -238,12 +342,6 @@ const Book = () => {
     return matchesSearch && matchesService;
   });
 
-  // Format distance
-  const formatDistance = (distance?: number) => {
-    if (!distance) return "N/A";
-    return `${distance.toFixed(1)} km`;
-  };
-
   // Format rating
   const formatRating = (rating?: number, count?: number) => {
     if (!rating) return "No ratings";
@@ -278,72 +376,6 @@ const Book = () => {
           borderBottomColor: "#E5E7EB",
         }}
       >
-        {/* Search Input with Icon */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#ffffff",
-            borderWidth: wp("0.25%"),
-            borderColor: "#E5E7EB",
-            borderRadius: wp("25%"),
-            paddingHorizontal: wp("4%"),
-            height: hp("6%"),
-            marginBottom: hp("2%"),
-          }}
-        >
-          <SvgSearch width={wp("5%")} height={wp("5%")} color="#9CA3AF" />
-          <TextInput
-            style={{
-              flex: 1,
-              paddingVertical: hp("1.5%"),
-              paddingHorizontal: wp("3%"),
-              fontSize: wp("4%"),
-              fontFamily: "Arimo-Regular",
-            }}
-            placeholder="Search workshops or services"
-            placeholderTextColor="#9CA3AF"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-        </View>
-
-        {/* Services Filter Buttons - Scrollable Horizontal */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: hp("2%") }}
-        >
-          <View style={{ flexDirection: "row", gap: wp("2%") }}>
-            {services.map((service) => (
-              <Pressable
-                key={service}
-                style={{
-                  paddingHorizontal: wp("4%"),
-                  paddingVertical: hp("1%"),
-                  backgroundColor:
-                    selectedService === service ? "#EFBF2B" : "#ffffff",
-                  borderRadius: wp("25%"),
-                  borderWidth: wp("0.25%"),
-                  borderColor:
-                    selectedService === service ? "#EFBF2B" : "#E5E7EB",
-                }}
-                onPress={() => setSelectedService(service)}
-              >
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Medium",
-                    fontSize: wp("3.5%"),
-                    color: selectedService === service ? "#000000" : "#374151",
-                  }}
-                >
-                  {service}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-
         {/* Workshops Count */}
         <View
           style={{
@@ -626,7 +658,7 @@ const Book = () => {
               borderTopLeftRadius: wp("5%"),
               borderTopRightRadius: wp("5%"),
               padding: wp("4%"),
-              maxHeight: hp("80%"),
+              maxHeight: hp("85%"),
             }}
           >
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -758,6 +790,97 @@ const Book = () => {
                 />
               </View>
 
+              {/* Date Picker */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Appointment Date*
+                </Text>
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    backgroundColor: "#FFFFFF",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("4%"),
+                      color: selectedDate ? "#111827" : "#9CA3AF",
+                    }}
+                  >
+                    {selectedDate ? formatDate(selectedDate) : "Select date"}
+                  </Text>
+                  <Text style={{ fontSize: wp("4%"), color: "#6A7282" }}>
+                    📅
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Time Picker */}
+              <View style={{ marginBottom: hp("2%") }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3.5%"),
+                    marginBottom: hp("0.5%"),
+                    color: "#374151",
+                  }}
+                >
+                  Appointment Time* (9:00 AM - 6:00 PM)
+                </Text>
+                <Pressable
+                  onPress={() => setShowTimePicker(true)}
+                  style={{
+                    borderWidth: wp("0.25%"),
+                    borderColor: "#E5E7EB",
+                    borderRadius: wp("1%"),
+                    padding: wp("3%"),
+                    backgroundColor: "#FFFFFF",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("4%"),
+                      color: selectedTime ? "#111827" : "#9CA3AF",
+                    }}
+                  >
+                    {selectedTime ? formatTime(selectedTime) : "Select time"}
+                  </Text>
+                  <Text style={{ fontSize: wp("4%"), color: "#6A7282" }}>
+                    ⏰
+                  </Text>
+                </Pressable>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Regular",
+                    fontSize: wp("3%"),
+                    color: "#6A7282",
+                    marginTop: hp("0.5%"),
+                    fontStyle: "italic",
+                  }}
+                >
+                  Business hours: 9:00 AM - 6:00 PM
+                </Text>
+              </View>
+
               {/* Vehicle Dropdown */}
               <View style={{ marginBottom: hp("3%") }}>
                 <Text
@@ -836,7 +959,7 @@ const Book = () => {
                       setSelectedVehicleId(selectedOption)
                     }
                     placeholder="e.g., Toyota"
-                    options={vehicles} // You need to provide an array of brand options
+                    options={vehicles}
                     style={{ flex: 1 }}
                   />
                 )}
@@ -853,6 +976,29 @@ const Book = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onDateChange}
+          minimumDate={minDate}
+          maximumDate={maxDate}
+        />
+      )}
+
+      {/* Time Picker Modal */}
+      {showTimePicker && (
+        <DateTimePicker
+          value={selectedTime}
+          mode="time"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={onTimeChange}
+          minuteInterval={15} // 15-minute intervals
+        />
+      )}
     </SafeAreaView>
   );
 };

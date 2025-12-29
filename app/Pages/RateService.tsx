@@ -33,7 +33,7 @@ interface ServiceReview {
   serviceReview_Rating: number;
   serviceReviewServiceID: number;
   reviewAccount: number;
-  serviceReview_Comment: string; // Now required based on API
+  serviceReview_Comment: string;
 }
 
 const RateService = () => {
@@ -42,7 +42,7 @@ const RateService = () => {
   const numericServiceId = Number(serviceId);
 
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState(""); // Changed from feedback to comment
+  const [comment, setComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -56,6 +56,39 @@ const RateService = () => {
     price: "$0.00",
     workshop: "Workshop",
   });
+
+  const [autoCommentApplied, setAutoCommentApplied] = useState(false);
+
+  // Auto-comment suggestions based on star rating
+  const getAutoComment = (stars: number): string => {
+    switch (stars) {
+      case 1:
+        return "Very poor service. Needs major improvement.";
+      case 2:
+        return "Below average. Could be much better.";
+      case 3:
+        return "Average service. Met basic expectations.";
+      case 4:
+        return "Good service. Satisfied with the experience.";
+      case 5:
+        return "Excellent service! Highly recommended.";
+      default:
+        return "";
+    }
+  };
+
+  // When rating changes, auto-fill comment if it's empty or if it's the same as a previous auto-comment
+  useEffect(() => {
+    if (rating > 0 && !existingReview) {
+      const autoComment = getAutoComment(rating);
+
+      // Only auto-fill if comment is empty or already contains an auto-comment
+      if (!comment.trim() || autoCommentApplied) {
+        setComment(autoComment);
+        setAutoCommentApplied(true);
+      }
+    }
+  }, [rating, existingReview]);
 
   // Fetch existing review when component loads
   useEffect(() => {
@@ -87,9 +120,7 @@ const RateService = () => {
             setExistingReview(userReview);
             setRating(userReview.serviceReview_Rating);
             setComment(userReview.serviceReview_Comment || "");
-
-            // You might want to fetch service details here if needed
-            // For now, we'll use the passed params
+            setAutoCommentApplied(false); // Don't auto-apply for existing reviews
           }
         }
       } catch (error) {
@@ -103,6 +134,23 @@ const RateService = () => {
     fetchExistingReview();
   }, [user?.accID, numericServiceId]);
 
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+  };
+
+  const handleCommentChange = (text: string) => {
+    setComment(text);
+    // If user starts typing manually, don't auto-apply anymore
+    if (autoCommentApplied && text !== getAutoComment(rating)) {
+      setAutoCommentApplied(false);
+    }
+  };
+
+  const handleClearComment = () => {
+    setComment("");
+    setAutoCommentApplied(false);
+  };
+
   const handleSubmitReview = async () => {
     if (!user?.accID) {
       Alert.alert("Error", "Please login to submit a review");
@@ -114,16 +162,6 @@ const RateService = () => {
       return;
     }
 
-    if (!comment.trim()) {
-      Alert.alert("Error", "Please add a comment for your review");
-      return;
-    }
-
-    if (comment.trim().length < 10) {
-      Alert.alert("Error", "Comment must be at least 10 characters long");
-      return;
-    }
-
     if (!numericServiceId) {
       Alert.alert("Error", "Invalid service ID");
       return;
@@ -132,36 +170,58 @@ const RateService = () => {
     try {
       setSubmitting(true);
 
-      const reviewData = {
-        serviceReview_Rating: rating,
-        serviceReviewServiceID: numericServiceId,
-        reviewAccount: user.accID,
-        serviceReview_Comment: comment.trim(), // Required field
-      };
+      if (existingReview) {
+        // UPDATE existing review
+        const updateData = {
+          serviceReview_ID: existingReview.serviceReview_ID,
+          serviceReview_Rating: rating,
+          serviceReview_Comment: comment.trim(),
+          serviceReview_Date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
+        };
 
-      console.log("Submitting review:", reviewData);
+        console.log("Updating review:", updateData);
+        const response = await rateServiceAPI.updateServiceReview(updateData);
+        console.log("Update response:", response.data);
 
-      const response = await rateServiceAPI.addServiceReview(reviewData);
-      console.log("Review response:", response.data);
-
-      if (response.data.success) {
-        Alert.alert(
-          "Success",
-          existingReview
-            ? "Review updated successfully!"
-            : "Thank you for your review!",
-          [
+        if (response.data.success) {
+          Alert.alert("Success", "Review updated successfully!", [
             {
               text: "OK",
               onPress: () => router.back(),
             },
-          ]
-        );
+          ]);
+        } else {
+          Alert.alert(
+            "Error",
+            response.data.message || "Failed to update review"
+          );
+        }
       } else {
-        Alert.alert(
-          "Error",
-          response.data.message || "Failed to submit review"
-        );
+        // CREATE new review
+        const createData = {
+          serviceReview_Rating: rating,
+          serviceReviewServiceID: numericServiceId,
+          reviewAccount: user.accID,
+          serviceReview_Comment: comment.trim(), // Can be empty string
+        };
+
+        console.log("Creating new review:", createData);
+        const response = await rateServiceAPI.addServiceReview(createData);
+        console.log("Create response:", response.data);
+
+        if (response.data.success) {
+          Alert.alert("Success", "Thank you for your review!", [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]);
+        } else {
+          Alert.alert(
+            "Error",
+            response.data.message || "Failed to submit review"
+          );
+        }
       }
     } catch (error: any) {
       console.error("Error submitting review:", error);
@@ -177,14 +237,13 @@ const RateService = () => {
 
   const renderStars = () => {
     return [1, 2, 3, 4, 5].map((star) => {
-      const StarIcon =
-        star <= (hoverRating || rating) ? SvgStar : SvgStar;
+      const StarIcon = star <= (hoverRating || rating) ? SvgStar : SvgStar;
       const starColor = star <= (hoverRating || rating) ? "#F1C02C" : "#E5E7EB";
 
       return (
         <TouchableOpacity
           key={star}
-          onPress={() => setRating(star)}
+          onPress={() => handleRatingChange(star)}
           onPressIn={() => setHoverRating(star)}
           onPressOut={() => setHoverRating(0)}
           disabled={submitting}
@@ -196,8 +255,7 @@ const RateService = () => {
     });
   };
 
-  const isSubmitDisabled =
-    rating === 0 || !comment.trim() || comment.trim().length < 10 || submitting;
+  const isSubmitDisabled = rating === 0 || submitting;
 
   if (loading) {
     return (
@@ -270,22 +328,38 @@ const RateService = () => {
               {existingReview && (
                 <View
                   style={{
-                    backgroundColor: "#D1FAE5",
-                    alignSelf: "flex-start",
-                    paddingHorizontal: wp("2%"),
-                    paddingVertical: hp("0.5%"),
-                    borderRadius: wp("1%"),
-                    marginBottom: hp("0.5%"),
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: wp("2%"),
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      fontFamily: "Arimo-Medium",
-                      fontSize: wp("2.5%"),
-                      color: "#065F46",
+                      backgroundColor: "#D1FAE5",
+                      paddingHorizontal: wp("2%"),
+                      paddingVertical: hp("0.5%"),
+                      borderRadius: wp("1%"),
+                      marginBottom: hp("0.5%"),
                     }}
                   >
-                    You've already reviewed this service
+                    <Text
+                      style={{
+                        fontFamily: "Arimo-Medium",
+                        fontSize: wp("2.5%"),
+                        color: "#065F46",
+                      }}
+                    >
+                      You've already reviewed this service
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("2.5%"),
+                      color: "#6A7282",
+                    }}
+                  >
+                    • Last updated: {existingReview.serviceReview_Date}
                   </Text>
                 </View>
               )}
@@ -353,19 +427,33 @@ const RateService = () => {
             </Text>
 
             {rating > 0 && (
-              <Text
-                style={{
-                  fontFamily: "Arimo-Bold",
-                  fontSize: wp("3.5%"),
-                  color: "#F1C02C",
-                  backgroundColor: "#FEF3C7",
-                  paddingHorizontal: wp("2%"),
-                  paddingVertical: hp("0.5%"),
-                  borderRadius: wp("1%"),
-                }}
-              >
-                {rating} {rating === 1 ? "star" : "stars"}
-              </Text>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Bold",
+                    fontSize: wp("3.5%"),
+                    color: "#F1C02C",
+                    backgroundColor: "#FEF3C7",
+                    paddingHorizontal: wp("2%"),
+                    paddingVertical: hp("0.5%"),
+                    borderRadius: wp("1%"),
+                  }}
+                >
+                  {rating} {rating === 1 ? "star" : "stars"}
+                </Text>
+                {!existingReview && rating > 0 && rating < 3 && (
+                  <Text
+                    style={{
+                      fontFamily: "Arimo-Regular",
+                      fontSize: wp("2.5%"),
+                      color: "#DC2626",
+                      marginTop: hp("0.25%"),
+                    }}
+                  >
+                    Poor experience
+                  </Text>
+                )}
+              </View>
             )}
           </View>
 
@@ -396,15 +484,12 @@ const RateService = () => {
           </Text>
         </View>
 
-        {/* Comment Card - Now required */}
+        {/* Comment Card - Optional */}
         <View
           style={{
             backgroundColor: "#ffffff",
             borderWidth: wp("0.25%"),
-            borderColor:
-              comment.trim().length < 10 && comment.length > 0
-                ? "#EF4444"
-                : "#E5E7EB",
+            borderColor: "#E5E7EB",
             borderRadius: wp("2.5%"),
             padding: wp("4%"),
           }}
@@ -413,37 +498,98 @@ const RateService = () => {
             style={{
               flexDirection: "row",
               alignItems: "center",
+              justifyContent: "space-between",
               marginBottom: hp("1%"),
             }}
           >
-            <Text
-              style={{
-                fontFamily: "Arimo-Bold",
-                fontSize: wp("4%"),
-                marginRight: wp("1%"),
-              }}
-            >
-              Share your feedback
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Arimo-Regular",
-                fontSize: wp("3%"),
-                color: "#6A7282",
-              }}
-            >
-              (required)
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  fontFamily: "Arimo-Bold",
+                  fontSize: wp("4%"),
+                  marginRight: wp("1%"),
+                }}
+              >
+                Share your feedback
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Arimo-Regular",
+                  fontSize: wp("3%"),
+                  color: "#6A7282",
+                }}
+              >
+                (optional)
+              </Text>
+            </View>
+
+            {comment.trim() && (
+              <TouchableOpacity
+                onPress={handleClearComment}
+                disabled={submitting}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3%"),
+                    color: "#EF4444",
+                  }}
+                >
+                  Clear
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
+
+          {/* Auto-comment suggestion */}
+          {autoCommentApplied && rating > 0 && (
+            <View
+              style={{
+                backgroundColor: "#F0FDF4",
+                borderWidth: wp("0.25%"),
+                borderColor: "#86EFAC",
+                borderRadius: wp("2%"),
+                padding: wp("3%"),
+                marginBottom: hp("1%"),
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: hp("0.5%"),
+                }}
+              >
+                <Text style={{ fontSize: wp("4%"), marginRight: wp("2%") }}>
+                  💡
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Arimo-Medium",
+                    fontSize: wp("3%"),
+                    color: "#065F46",
+                  }}
+                >
+                  Suggested comment based on your {rating}-star rating
+                </Text>
+              </View>
+              <Text
+                style={{
+                  fontFamily: "Arimo-Regular",
+                  fontSize: wp("3%"),
+                  color: "#166534",
+                }}
+              >
+                Feel free to edit or delete this suggestion
+              </Text>
+            </View>
+          )}
 
           <TextInput
             style={{
               height: hp("12.5%"),
               borderWidth: wp("0.25%"),
-              borderColor:
-                comment.trim().length < 10 && comment.length > 0
-                  ? "#EF4444"
-                  : "#E5E7EB",
+              borderColor: "#E5E7EB",
               borderRadius: wp("2%"),
               padding: wp("3%"),
               fontFamily: "Arimo-Regular",
@@ -451,12 +597,12 @@ const RateService = () => {
               color: "#111827",
               textAlignVertical: "top",
             }}
-            placeholder="Tell us about your experience... (Minimum 10 characters)"
+            placeholder="Tell us about your experience... (optional)"
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
             value={comment}
-            onChangeText={setComment}
+            onChangeText={handleCommentChange}
             editable={!submitting}
           />
 
@@ -467,15 +613,16 @@ const RateService = () => {
               marginTop: hp("1%"),
             }}
           >
-            {comment.trim().length < 10 && comment.length > 0 && (
+            {rating > 0 && !comment.trim() && (
               <Text
                 style={{
                   fontFamily: "Arimo-Regular",
                   fontSize: wp("3%"),
-                  color: "#EF4444",
+                  color: "#6A7282",
+                  fontStyle: "italic",
                 }}
               >
-                Comment must be at least 10 characters
+                No comment added. You can submit with just the rating.
               </Text>
             )}
 
@@ -483,7 +630,7 @@ const RateService = () => {
               style={{
                 fontFamily: "Arimo-Regular",
                 fontSize: wp("3%"),
-                color: comment.trim().length < 10 ? "#EF4444" : "#9CA3AF",
+                color: comment.length > 500 ? "#EF4444" : "#9CA3AF",
               }}
             >
               {comment.length}/500 characters
@@ -492,7 +639,7 @@ const RateService = () => {
         </View>
 
         {/* Validation Summary */}
-        {isSubmitDisabled && (
+        {isSubmitDisabled && rating === 0 && (
           <View
             style={{
               backgroundColor: "#FEF2F2",
@@ -512,40 +659,25 @@ const RateService = () => {
               To submit your review:
             </Text>
             <View style={{ marginTop: hp("0.5%") }}>
-              {rating === 0 && (
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Regular",
-                    fontSize: wp("3%"),
-                    color: "#DC2626",
-                  }}
-                >
-                  • Select a star rating
-                </Text>
-              )}
-              {!comment.trim() && (
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Regular",
-                    fontSize: wp("3%"),
-                    color: "#DC2626",
-                  }}
-                >
-                  • Add a comment
-                </Text>
-              )}
-              {comment.trim().length < 10 && comment.length > 0 && (
-                <Text
-                  style={{
-                    fontFamily: "Arimo-Regular",
-                    fontSize: wp("3%"),
-                    color: "#DC2626",
-                  }}
-                >
-                  • Comment must be at least 10 characters (currently{" "}
-                  {comment.trim().length})
-                </Text>
-              )}
+              <Text
+                style={{
+                  fontFamily: "Arimo-Regular",
+                  fontSize: wp("3%"),
+                  color: "#DC2626",
+                }}
+              >
+                • Select a star rating (required)
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Arimo-Regular",
+                  fontSize: wp("3%"),
+                  color: "#6A7282",
+                  marginTop: hp("0.25%"),
+                }}
+              >
+                • Comment is optional
+              </Text>
             </View>
           </View>
         )}
