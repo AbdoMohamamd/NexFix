@@ -1,6 +1,7 @@
 import SvgAngleRight from "@/assets/Icons/AngleRight";
 import SvgBell from "@/assets/Icons/Bell";
 import SvgClock from "@/assets/Icons/Clock";
+import SvgClockBackward from "@/assets/Icons/ClockBackward";
 import SvgLocation from "@/assets/Icons/Location";
 import SvgTag from "@/assets/Icons/Tag"; // Add this import for offer icon
 import {
@@ -361,6 +362,21 @@ export default function TabOneScreen() {
 
         {/* Notification Icon Button */}
         <Pressable
+          onPress={() => {
+            router.navigate("/Pages/ServicesHistory");
+          }}
+          style={{
+            padding: wp("2%"),
+            marginLeft: wp("2%"),
+          }}
+        >
+          <SvgClockBackward
+            width={wp("6%")}
+            height={wp("6%")}
+            color="#111827"
+          />
+        </Pressable>
+        <Pressable
           onPress={navigateToReminders}
           style={{
             padding: wp("2%"),
@@ -544,7 +560,7 @@ export default function TabOneScreen() {
           </Text>
         </View>
       )}
-      <View style={{paddingHorizontal:16,paddingTop:12}}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
         <Text
           style={{
             fontSize: wp("4.5%"),

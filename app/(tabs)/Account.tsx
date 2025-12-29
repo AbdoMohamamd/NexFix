@@ -1,6 +1,5 @@
 import SvgAngleRight from "@/assets/Icons/AngleRight";
 import SvgCar from "@/assets/Icons/Car";
-import SvgClockBackward from "@/assets/Icons/ClockBackward";
 import SvgLogout from "@/assets/Icons/Logout";
 import SvgPlus from "@/assets/Icons/Plus";
 import { vehicleAPI } from "@/assets/utils/Api/api"; // Import the API
@@ -433,92 +432,6 @@ const Account = () => {
               ))}
             </View>
           )}
-        </View>
-
-        {/* My Services Section */}
-        <View
-          style={{
-            padding: wp("5%"),
-            borderBottomWidth: wp("0.25%"),
-            borderBottomColor: "#F3F4F6",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: hp("2%"),
-            }}
-          >
-            <Text
-              style={{
-                fontSize: wp("4.5%"),
-                fontFamily: "Arimo-Bold",
-                color: "#111827",
-              }}
-            >
-              My Services
-            </Text>
-          </View>
-
-          {/* Services History Card */}
-          <TouchableOpacity
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "#FFFDF6",
-              borderWidth: wp("0.25%"),
-              borderColor: "#FDE68A",
-              borderRadius: wp("3%"),
-              padding: wp("4%"),
-            }}
-            onPress={() => {
-              router.navigate("/Pages/ServicesHistory");
-            }}
-          >
-            <View
-              style={{
-                width: wp("12%"),
-                height: wp("12%"),
-                borderRadius: wp("6%"),
-                backgroundColor: "#F1C02C",
-                justifyContent: "center",
-                alignItems: "center",
-                marginRight: wp("4%"),
-              }}
-            >
-              <SvgClockBackward
-                width={wp("6%")}
-                height={wp("6%")}
-                color="#ffffff"
-              />
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: wp("4%"),
-                  fontFamily: "Arimo-Bold",
-                  color: "#111827",
-                }}
-              >
-                Services History
-              </Text>
-              <Text
-                style={{
-                  fontSize: wp("3.5%"),
-                  fontFamily: "Arimo-Regular",
-                  color: "#6B7280",
-                  marginTop: hp("0.25%"),
-                }}
-              >
-                View your past service records
-              </Text>
-            </View>
-
-            <SvgAngleRight width={wp("5%")} height={wp("5%")} color="#9CA3AF" />
-          </TouchableOpacity>
         </View>
 
         {/* App Version */}

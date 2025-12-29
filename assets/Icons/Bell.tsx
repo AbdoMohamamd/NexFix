@@ -11,7 +11,7 @@ const SvgBell = (props: SvgProps) => (
     {...props}
   >
     <Path
-      stroke="#4A5565"
+      stroke={props.color}
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={1.667}
